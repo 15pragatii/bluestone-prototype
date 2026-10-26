@@ -1,0 +1,2235 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueStone Unified Checkout Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style data-stitch-css-vh="
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #F5F6FA;
+      color: #101B34;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font-family: inherit; color: inherit; }
+    .serif-title { font-family: 'Fraunces', Georgia, serif; font-weight: 600; letter-spacing: -0.015em; }
+    
+    /* Layout */
+    .app-container { min-height: 100vh; display: flex; flex-direction: column; }
+    .content-wrap { max-width: 1240px; margin: 0 auto; width: 100%; padding: 0 32px; }
+    .card { background: #ffffff; border: 1px solid #E3E6EE; border-radius: 16px; box-shadow: 0 1px 3px rgba(16,27,52,0.03); }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 48px; padding: 0 22px; border-radius: 12px; border: 1px solid transparent;
+      font-weight: 600; font-size: 15px; cursor: pointer; text-decoration: none; transition: all 0.15s ease;
+    }
+    .btn-primary { background: #1D3BA0; color: #ffffff; }
+    .btn-primary:hover { background: #162E80; }
+    .btn-secondary { background: #ffffff; border-color: #BFC6D6; color: #101B34; }
+    .btn-secondary:hover { background: #F5F6FA; border-color: #8E9AC0; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    
+    .btn-text {
+      background: none; border: 0; padding: 6px 4px; min-height: 36px;
+      color: #1D3BA0; font-weight: 600; font-size: 13.5px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    }
+    .btn-text:hover { text-decoration: underline; }
+    .btn-text-muted { color: #4A5470; }
+    
+    /* Forms */
+    .form-label { display: block; font-size: 12.5px; font-weight: 600; color: #3A4560; margin-bottom: 6px; }
+    .form-input {
+      width: 100%; min-height: 46px; border: 1px solid #AEB6C8; border-radius: 10px;
+      padding: 0 14px; font: inherit; font-size: 14.5px; background: #ffffff; color: #101B34;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-input:focus { outline: none; border-color: #1D3BA0; box-shadow: 0 0 0 3px rgba(29,59,160,0.12); }
+    .form-input.is-invalid { border-color: #B42318; background: #FFFAF9; }
+    .form-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(180,35,24,0.12); }
+    .form-error { color: #B42318; font-size: 12px; margin-top: 5px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    
+    .input-prefix {
+      display: flex; align-items: stretch; border: 1px solid #AEB6C8; border-radius: 10px;
+      background: #ffffff; overflow: hidden;
+    }
+    .input-prefix span {
+      display: flex; align-items: center; padding: 0 12px; background: #F5F6FA;
+      color: #3A4560; font-weight: 600; border-right: 1px solid #AEB6C8; font-size: 14px;
+    }
+    .input-prefix input { border: 0; outline: none; min-height: 46px; padding: 0 14px; font: inherit; font-size: 14.5px; width: 100%; }
+    .input-prefix:focus-within { border-color: #1D3BA0; box-shadow: 0 0 0 3px rgba(29,59,160,0.12); }
+    .input-prefix.is-invalid { border-color: #B42318; }
+    
+    /* Tags &amp; Badges */
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .tag-jewel { background: #E8EDFB; color: #1D3BA0; }
+    .tag-gold { background: #FFF1D6; color: #7A4E00; }
+    .tag-gift { background: #FDE8F0; color: #9C2459; }
+    .tag-success { background: #E3F5EC; color: #0B6B42; }
+    .tag-danger { background: #FEECEA; color: #B42318; }
+    
+    /* Stepper Header */
+    .scenario-pill {
+      padding: 5px 14px; min-height: 32px; border-radius: 999px; border: 1px solid #3B4C7E;
+      background: transparent; color: #E0E5F5; font-size: 12.5px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .scenario-pill:hover { border-color: #ffffff; color: #ffffff; }
+    .scenario-pill[aria-pressed=&quot;true&quot;] { background: #ffffff; color: #101B34; border-color: #ffffff; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    
+    .qty-btn { width: 38px; height: 38px; border: 0; background: #ffffff; font-size: 18px; cursor: pointer; color: #101B34; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { background: #F5F6FA; }
+    .qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    
+    .group-header {
+      width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 22px;
+      background: #ffffff; border: 0; cursor: pointer; text-align: left; transition: background 0.15s;
+    }
+    .group-header:hover { background: #FAFBFD; }
+    
+    .option-card {
+      text-align: left; border: 1.5px solid #C9CFDD; background: #ffffff; border-radius: 14px;
+      padding: 16px; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; width: 100%;
+      transition: all 0.15s;
+    }
+    .option-card:hover { border-color: #8E9AC0; background: #FAFAFC; }
+    .option-card[aria-pressed=&quot;true&quot;] { border-color: #1D3BA0; background: #F3F6FF; box-shadow: 0 0 0 1px #1D3BA0 inset; }
+    
+    .filter-tab {
+      padding: 0 16px; min-height: 38px; border-radius: 999px; border: 1px solid #C9CFDD;
+      background: #ffffff; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-tab[aria-pressed=&quot;true&quot;] { background: #101B34; color: #ffffff; border-color: #101B34; }
+    
+    .row-flex { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    
+    /* Sticky Mobile Bottom Bar */
+    .mobile-bar { display: none; }
+    @media (max-width: 900px) {
+      .main-grid { flex-direction: column !important; }
+      .sidebar { position: static !important; max-width: 100% !important; }
+      .mobile-bar { display: flex !important; }
+      .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+      .content-wrap { padding-left: 16px !important; padding-right: 16px !important; }
+    }
+    
+    /* Animation details */
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  ">
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #F5F6FA;
+      color: #101B34;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font-family: inherit; color: inherit; }
+    .serif-title { font-family: 'Fraunces', Georgia, serif; font-weight: 600; letter-spacing: -0.015em; }
+    
+    /* Layout */
+    .app-container { min-height: 1024px; display: flex; flex-direction: column; }
+    .content-wrap { max-width: 1240px; margin: 0 auto; width: 100%; padding: 0 32px; }
+    .card { background: #ffffff; border: 1px solid #E3E6EE; border-radius: 16px; box-shadow: 0 1px 3px rgba(16,27,52,0.03); }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 48px; padding: 0 22px; border-radius: 12px; border: 1px solid transparent;
+      font-weight: 600; font-size: 15px; cursor: pointer; text-decoration: none; transition: all 0.15s ease;
+    }
+    .btn-primary { background: #1D3BA0; color: #ffffff; }
+    .btn-primary:hover { background: #162E80; }
+    .btn-secondary { background: #ffffff; border-color: #BFC6D6; color: #101B34; }
+    .btn-secondary:hover { background: #F5F6FA; border-color: #8E9AC0; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    
+    .btn-text {
+      background: none; border: 0; padding: 6px 4px; min-height: 36px;
+      color: #1D3BA0; font-weight: 600; font-size: 13.5px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    }
+    .btn-text:hover { text-decoration: underline; }
+    .btn-text-muted { color: #4A5470; }
+    
+    /* Forms */
+    .form-label { display: block; font-size: 12.5px; font-weight: 600; color: #3A4560; margin-bottom: 6px; }
+    .form-input {
+      width: 100%; min-height: 46px; border: 1px solid #AEB6C8; border-radius: 10px;
+      padding: 0 14px; font: inherit; font-size: 14.5px; background: #ffffff; color: #101B34;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-input:focus { outline: none; border-color: #1D3BA0; box-shadow: 0 0 0 3px rgba(29,59,160,0.12); }
+    .form-input.is-invalid { border-color: #B42318; background: #FFFAF9; }
+    .form-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(180,35,24,0.12); }
+    .form-error { color: #B42318; font-size: 12px; margin-top: 5px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    
+    .input-prefix {
+      display: flex; align-items: stretch; border: 1px solid #AEB6C8; border-radius: 10px;
+      background: #ffffff; overflow: hidden;
+    }
+    .input-prefix span {
+      display: flex; align-items: center; padding: 0 12px; background: #F5F6FA;
+      color: #3A4560; font-weight: 600; border-right: 1px solid #AEB6C8; font-size: 14px;
+    }
+    .input-prefix input { border: 0; outline: none; min-height: 46px; padding: 0 14px; font: inherit; font-size: 14.5px; width: 100%; }
+    .input-prefix:focus-within { border-color: #1D3BA0; box-shadow: 0 0 0 3px rgba(29,59,160,0.12); }
+    .input-prefix.is-invalid { border-color: #B42318; }
+    
+    /* Tags & Badges */
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .tag-jewel { background: #E8EDFB; color: #1D3BA0; }
+    .tag-gold { background: #FFF1D6; color: #7A4E00; }
+    .tag-gift { background: #FDE8F0; color: #9C2459; }
+    .tag-success { background: #E3F5EC; color: #0B6B42; }
+    .tag-danger { background: #FEECEA; color: #B42318; }
+    
+    /* Stepper Header */
+    .scenario-pill {
+      padding: 5px 14px; min-height: 32px; border-radius: 999px; border: 1px solid #3B4C7E;
+      background: transparent; color: #E0E5F5; font-size: 12.5px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .scenario-pill:hover { border-color: #ffffff; color: #ffffff; }
+    .scenario-pill[aria-pressed="true"] { background: #ffffff; color: #101B34; border-color: #ffffff; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    
+    .qty-btn { width: 38px; height: 38px; border: 0; background: #ffffff; font-size: 18px; cursor: pointer; color: #101B34; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { background: #F5F6FA; }
+    .qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    
+    .group-header {
+      width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 22px;
+      background: #ffffff; border: 0; cursor: pointer; text-align: left; transition: background 0.15s;
+    }
+    .group-header:hover { background: #FAFBFD; }
+    
+    .option-card {
+      text-align: left; border: 1.5px solid #C9CFDD; background: #ffffff; border-radius: 14px;
+      padding: 16px; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; width: 100%;
+      transition: all 0.15s;
+    }
+    .option-card:hover { border-color: #8E9AC0; background: #FAFAFC; }
+    .option-card[aria-pressed="true"] { border-color: #1D3BA0; background: #F3F6FF; box-shadow: 0 0 0 1px #1D3BA0 inset; }
+    
+    .filter-tab {
+      padding: 0 16px; min-height: 38px; border-radius: 999px; border: 1px solid #C9CFDD;
+      background: #ffffff; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-tab[aria-pressed="true"] { background: #101B34; color: #ffffff; border-color: #101B34; }
+    
+    .row-flex { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    
+    /* Sticky Mobile Bottom Bar */
+    .mobile-bar { display: none; }
+    @media (max-width: 900px) {
+      .main-grid { flex-direction: column !important; }
+      .sidebar { position: static !important; max-width: 100% !important; }
+      .mobile-bar { display: flex !important; }
+      .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+      .content-wrap { padding-left: 16px !important; padding-right: 16px !important; }
+    }
+    
+    /* Animation details */
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body data-mode="connect">
+  <div class="app-container">
+    
+    <!-- Top Prototype Toolbar -->
+    <aside style="background: #101B34; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08);" aria-label="Prototype Switcher">
+      <div class="content-wrap" style="padding-top: 10px; padding-bottom: 10px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;" class="">
+          <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(154, 178, 240); display: flex; align-items: center; gap: 6px;" class=""></span>
+          <div id="scenarioTabs" style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <button class="scenario-pill" aria-pressed="true" onclick="setScenario('all')">
+          All Items (&gt;₹2L with PAN)
+        </button>
+      
+        <button class="scenario-pill" aria-pressed="false" onclick="setScenario('j')">
+          Jewellery Only
+        </button>
+      
+        <button class="scenario-pill" aria-pressed="false" onclick="setScenario('jg')">
+          Jewellery + Gift Card
+        </button>
+      
+        <button class="scenario-pill" aria-pressed="false" onclick="setScenario('jgms')">
+          Jewellery + Gold Plan
+        </button>
+      
+        <button class="scenario-pill" aria-pressed="false" onclick="setScenario('gms')">
+          Gold Plans Only (GMS/GRP)
+        </button>
+      
+        <button class="scenario-pill" aria-pressed="false" onclick="setScenario('many')">
+          Many Items Multi-Category
+        </button>
+      </div>
+        </div>
+        <div style="font-size: 12px; color: #AEBEDC;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; margin-right: 6px;"></span>
+          State: Live interactive cart
+        </div>
+      </div>
+    </aside>
+
+    <!-- Global App Header -->
+    <header style="background: #ffffff; border-bottom: 1px solid #E3E6EE; position: sticky; top: 0; z-index: 20;">
+      <div class="content-wrap" style="min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <!-- Brand -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="#" style="text-decoration: none;" onclick="setScreen('cart'); return false;">
+            <span class="serif-title" style="font-size: 26px; color: #1D3BA0; font-weight: 700; letter-spacing: -0.02em;">BlueStone</span>
+          </a>
+          <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; background: #F1F4FA; color: #4A5470; padding: 2px 8px; border-radius: 6px;">Checkout</span>
+        </div>
+
+        <!-- Checkout Stepper -->
+        <nav aria-label="Checkout Progress" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div id="checkoutStepper" style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;" onclick="">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #1D3BA0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">
+              1
+            </span>
+            <span style="font-size: 13.5px; font-weight: 700; color: #101B34;">Cart</span>
+            <span style="width: 24px; height: 2px; background: #C9CFDD; border-radius: 2px;"></span>
+          </div>
+        
+          <div style="display: flex; align-items: center; gap: 8px;" onclick="" class="">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #E3E6EE; color: #5A6480; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">
+              2
+            </span>
+            <span style="font-size: 13.5px; font-weight: 500; color: #5A6480;">Details &amp; Address</span>
+            <span style="width: 24px; height: 2px; background: #C9CFDD; border-radius: 2px;"></span>
+          </div>
+        
+          <div style="display: flex; align-items: center; gap: 8px;" onclick="">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #E3E6EE; color: #5A6480; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">
+              3
+            </span>
+            <span style="font-size: 13.5px; font-weight: 500; color: #5A6480;">Payment</span>
+            
+          </div>
+        </div>
+        </nav>
+
+        <!-- Trust Badges -->
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #3A4560;">
+          <span style="display: inline-flex; gap: 6px; align-items: center; font-weight: 500;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B6B42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            100% Certified &amp; Insured
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="content-wrap" style="padding-top: 32px; padding-bottom: 140px; flex: 1;">
+      
+      <!-- Screen 1: Cart & Cross-Sell View -->
+      <div id="screenCart" class="fade-in" style="display: block;">
+        <div class="main-grid" style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;">
+          
+          <!-- Left Column (Items & Add-ons) -->
+          <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="row-flex" style="flex-wrap: wrap; align-items: flex-end;">
+              <div>
+                <h1 class="serif-title" style="font-size: 32px; color: #101B34;">Your Cart</h1>
+                <p style="color: #5A6480; font-size: 14px; margin-top: 2px;">Review items across jewellery, monthly gold schemes, and gift cards</p>
+              </div>
+              <span id="cartCountBadge" style="font-weight: 600; color: #1D3BA0; background: #E8EDFB; padding: 4px 12px; border-radius: 999px; font-size: 13px;">4 items</span>
+            </div>
+
+            <!-- Toast / Undo Bar -->
+            <div id="toastBar" style="display: none; align-items: center; justify-content: space-between; background: #101B34; color: #ffffff; border-radius: 12px; padding: 8px 18px;" role="status">
+              <span id="toastMessage" style="font-size: 13.5px; font-weight: 500;">Item updated</span>
+              <button class="btn-text" style="color: #9AB2F0; font-size: 13px;" onclick="undoLastAction()">Undo</button>
+            </div>
+
+            <!-- Validation warning banner -->
+            <div id="cartGiftWarning" style="display: none; background: #FEECEA; color: #B42318; border-radius: 12px; padding: 12px 18px; font-weight: 600; border: 1px solid #FECDCA;" role="alert">
+              Please complete all recipient and sender details for your gift card before continuing.
+            </div>
+
+            <!-- Empty State -->
+            <div id="cartEmptyState" class="card" style="display: none; padding: 56px 24px; text-align: center; flex-direction: column; align-items: center; gap: 12px;">
+              <div style="width: 64px; height: 64px; border-radius: 50%; background: #F0F3FA; display: flex; align-items: center; justify-content: center; color: #5A6480;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </div>
+              <h2 class="serif-title" style="font-size: 22px;">Your cart is currently empty</h2>
+              <p style="color: #5A6480; max-width: 360px;">Add items from our fine jewellery collection, start an 11-month gold plan, or customize a festive gift card below.</p>
+            </div>
+
+            <!-- Section 1: Jewellery Items Group -->
+            <section id="groupJewellery" class="card" style="overflow: hidden; display: block;">
+              <button class="group-header" onclick="toggleCollapse('jewellery')" aria-expanded="true">
+                <span style="width: 42px; height: 42px; border-radius: 12px; background: #E8EDFB; display: flex; align-items: center; justify-content: center; flex: none;">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="#1D3BA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 32a10 10 0 1 0 20 0a10 10 0 1 0 -20 0M19 16l2.5 -5h5l2.5 5l-5 6z"></path></svg>
+                </span>
+                <span style="flex: 1; min-width: 0;">
+                  <span class="serif-title" style="font-size: 19px; display: block;">Fine Jewellery</span>
+                  <span id="jewSummaryText" style="color: #5A6480; font-size: 13px;">2 items</span>
+                </span>
+                <span id="jewSubtotal" style="font-weight: 700; font-size: 16px; color: #101B34;">₹2,41,300</span>
+                <svg id="jewChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s; transform: none;"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <div id="jewListContainer">
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap; align-items: flex-start;">
+              <div style="background: #E8EDFB; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="M8 10Q24 52 40 10M24 31l3.5 5l-3.5 5l-3.5 -5z"></path></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">Cascade Diamond Necklace</h3>
+                    <span class="tag tag-success" style="margin-top: 4px;">Flat 13% off on diamonds</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: 700; font-size: 18px; color: #101B34;">₹1,38,900</div>
+                    <div style="color: #5A6480; font-size: 13px;">
+                      <s>₹1,59,900</s> <span style="color: #0B6B42; font-weight: 600;">13% off</span>
+                    </div>
+                    
+                  </div>
+                </div>
+
+                <div style="font-size: 13px; color: #4A5470;">
+                  <div>18 KT White Gold · 11.2 g</div>
+                  <div>Diamond · 1.12 ct · VS / GH</div>
+                </div>
+
+                <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-top: 4px;">
+                  
+                    <div style="width: 110px;">
+                      <label class="form-label" style="margin-bottom: 4px;">Ring Size</label>
+                      <select class="form-input" style="min-height: 40px; padding: 0 10px;" onchange="updateItemSize('j_c5', this.value)">
+                        <option value="16 in" selected="">16 in</option><option value="18 in">18 in</option>
+                      </select>
+                    </div>
+                  
+
+                  <div>
+                    <span class="form-label" style="margin-bottom: 4px;">Quantity</span>
+                    <div style="display: inline-flex; align-items: center; border: 1px solid #AEB6C8; border-radius: 10px; overflow: hidden; background: #fff;">
+                      <button class="qty-btn" onclick="updateQty('j_c5', -1)" disabled="">−</button>
+                      <span style="min-width: 36px; text-align: center; font-weight: 600; font-size: 14px;">1</span>
+                      <button class="qty-btn" onclick="updateQty('j_c5', 1)">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; color: #0B6B42; font-weight: 600; font-size: 13px; margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"></path></svg>
+                  Delivery by Fri, 6 Nov (Express Insured)
+                </div>
+
+                <div style="display: flex; gap: 14px; margin-top: 4px;">
+                  <button class="btn-text" onclick="moveToWishlist('j_c5')">Move to Wishlist</button>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('j_c5')">Remove</button>
+                </div>
+              </div>
+            </article>
+          
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap; align-items: flex-start;">
+              <div style="background: #E8EDFB; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="M7 24a17 7 0 1 0 34 0a17 7 0 1 0 -34 0M11 26a13 5 0 0 0 26 0"></path></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">Classic Gold Bangle</h3>
+                    <span class="tag tag-success" style="margin-top: 4px;">Making charges 20% off</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: 700; font-size: 18px; color: #101B34;">₹1,02,400</div>
+                    <div style="color: #5A6480; font-size: 13px;">
+                      <s>₹1,08,500</s> <span style="color: #0B6B42; font-weight: 600;">6% off</span>
+                    </div>
+                    
+                  </div>
+                </div>
+
+                <div style="font-size: 13px; color: #4A5470;">
+                  <div>22 KT Yellow Gold · 14.6 g</div>
+                  <div>Plain gold, no stone</div>
+                </div>
+
+                <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-top: 4px;">
+                  
+                    <div style="width: 110px;">
+                      <label class="form-label" style="margin-bottom: 4px;">Ring Size</label>
+                      <select class="form-input" style="min-height: 40px; padding: 0 10px;" onchange="updateItemSize('j_c4', this.value)">
+                        <option value="2.4">2.4</option><option value="2.6" selected="">2.6</option><option value="2.8">2.8</option>
+                      </select>
+                    </div>
+                  
+
+                  <div>
+                    <span class="form-label" style="margin-bottom: 4px;">Quantity</span>
+                    <div style="display: inline-flex; align-items: center; border: 1px solid #AEB6C8; border-radius: 10px; overflow: hidden; background: #fff;">
+                      <button class="qty-btn" onclick="updateQty('j_c4', -1)" disabled="">−</button>
+                      <span style="min-width: 36px; text-align: center; font-weight: 600; font-size: 14px;">1</span>
+                      <button class="qty-btn" onclick="updateQty('j_c4', 1)">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; color: #0B6B42; font-weight: 600; font-size: 13px; margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"></path></svg>
+                  Delivery by Mon, 9 Nov (Express Insured)
+                </div>
+
+                <div style="display: flex; gap: 14px; margin-top: 4px;">
+                  <button class="btn-text" onclick="moveToWishlist('j_c4')">Move to Wishlist</button>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('j_c4')">Remove</button>
+                </div>
+              </div>
+            </article>
+          </div>
+            </section>
+
+            <!-- Section 2: Gold Plans Group -->
+            <section id="groupPlans" class="card" style="overflow: hidden; display: block;">
+              <button class="group-header" onclick="toggleCollapse('plans')" aria-expanded="true">
+                <span style="width: 42px; height: 42px; border-radius: 12px; background: #FFF1D6; display: flex; align-items: center; justify-content: center; flex: none;">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="#7A4E00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0M18 19h12M18 24h12M21 19c7 0 7 8 0 8l8 7"></path></svg>
+                </span>
+                <span style="flex: 1; min-width: 0;">
+                  <span class="serif-title" style="font-size: 19px; display: block;">Gold Investment Plans</span>
+                  <span id="planSummaryText" style="color: #5A6480; font-size: 13px;">1 active plan(s)</span>
+                </span>
+                <span id="planSubtotal" style="font-weight: 700; font-size: 16px; color: #7A4E00;">₹5,000 due today</span>
+                <svg id="planChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s; transform: none;"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <div id="planListContainer">
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap;">
+              <div style="background: #FFF1D6; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#7A4E00" stroke-width="1.5"><path d="M10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0M18 19h12M18 24h12M21 19c7 0 7 8 0 8l8 7"></path></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">
+                      10+1 Monthly Gold Scheme (GMS)
+                    </h3>
+                    <span class="tag tag-gold" style="margin-top: 4px;">
+                      Pay 10 instalments, BlueStone pays 11th
+                    </span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 12px; color: #5A6480;">1st instalment due now</div>
+                    <div style="font-weight: 700; font-size: 18px; color: #7A4E00;">₹5,000</div>
+                  </div>
+                </div>
+
+                <div class="grid-2" style="gap: 12px 16px;">
+                  <div>
+                    <label class="form-label">Monthly Instalment Amount</label>
+                    <select class="form-input" style="min-height: 40px;" onchange="updatePlanMonthly('p1', this.value)">
+                      
+                        <option value="2000">₹2,000 / month</option>
+                      
+                        <option value="3000">₹3,000 / month</option>
+                      
+                        <option value="5000" selected="">₹5,000 / month</option>
+                      
+                        <option value="10000">₹10,000 / month</option>
+                      
+                        <option value="20000">₹20,000 / month</option>
+                      
+                        <option value="25000">₹25,000 / month</option>
+                      
+                    </select>
+                  </div>
+                  <div>
+                    <span class="form-label">Scheme Tenure</span>
+                    <div style="min-height: 40px; display: flex; align-items: center; font-weight: 600; color: #101B34;">11 Months</div>
+                  </div>
+                </div>
+
+                <div style="background: #FFF9ED; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #78350F; line-height: 1.45;">
+                  <strong>Maturity Benefit:</strong> 
+                  Pay 10 monthly payments of ₹5,000, BlueStone contributes ₹5,000. Redeem ₹55,000 in jewellery.
+                </div>
+
+                <div>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('p1')">Remove Plan</button>
+                </div>
+              </div>
+            </article>
+          </div>
+            </section>
+
+            <!-- Section 3: Gift Cards Group -->
+            <section id="groupGifts" class="card" style="overflow: hidden; display: block;">
+              <button class="group-header" onclick="toggleCollapse('gifts')" aria-expanded="true">
+                <span style="width: 42px; height: 42px; border-radius: 12px; background: #FDE8F0; display: flex; align-items: center; justify-content: center; flex: none;">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="#9C2459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 15h32v24h-32zM8 23h32M24 15v24M24 15c-3 -6 -9 -5 -8 -1c.5 2 4 1 8 1c4 0 7.5 1 8 -1c1 -4 -5 -5 -8 1"></path></svg>
+                </span>
+                <span style="flex: 1; min-width: 0;">
+                  <span class="serif-title" style="font-size: 19px; display: block;">E-Gift Cards</span>
+                  <span id="giftSummaryText" style="color: #5A6480; font-size: 13px;">1 card(s)</span>
+                </span>
+                <span id="giftSubtotal" style="font-weight: 700; font-size: 16px; color: #9C2459;">₹5,000</span>
+                <svg id="giftChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s; transform: none;"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <div id="giftListContainer">
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap;">
+              <div style="background: #FDE8F0; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#9C2459" stroke-width="1.5"><path d="M8 15h32v24h-32zM8 23h32M24 15v24M24 15c-3 -6 -9 -5 -8 -1c.5 2 4 1 8 1c4 0 7.5 1 8 -1c1 -4 -5 -5 -8 1"></path></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">Birthday Digital Gift Card</h3>
+                    <span class="tag tag-gift" style="margin-top: 4px;">Instant Email Delivery</span>
+                  </div>
+                  <div style="font-weight: 700; font-size: 18px; color: #9C2459;">₹5,000</div>
+                </div>
+
+                
+                  <div style="font-size: 13.5px; color: #3A4560; background: #FAFBFD; padding: 10px 14px; border-radius: 10px; border: 1px solid #E3E6EE;">
+                    <div><span style="color: #5A6480;">To:</span> <strong>Meera Mehta</strong> (meera.mehta@example.com)</div>
+                    <div><span style="color: #5A6480;">From:</span> <strong>Aarav Mehta</strong></div>
+                  </div>
+                
+
+                <div style="display: flex; gap: 14px;">
+                  <button class="btn-text" onclick="toggleGiftEditing('g1')">
+                    Edit Greeting
+                  </button>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('g1')">Remove</button>
+                </div>
+              </div>
+            </article>
+          </div>
+            </section>
+
+            <!-- Cross-Sell & Quick Add Section -->
+            <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+              <div class="row-flex" style="align-items: center;">
+                <div>
+                  <h2 class="serif-title" style="font-size: 20px;">Add More to Your Order</h2>
+                  <p style="color: #5A6480; font-size: 13px;">Special savings and complementary plans</p>
+                </div>
+              </div>
+
+              <!-- Instant add triggers -->
+              <div class="grid-2">
+                <button class="option-card" onclick="addNewPlan('GMS', 5000)">
+                  <span style="width: 44px; height: 44px; border-radius: 12px; background: #FFF1D6; display: flex; align-items: center; justify-content: center; flex: none;">
+                    <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="#7A4E00" stroke-width="2"><path d="M10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0M18 19h12M18 24h12M21 19c7 0 7 8 0 8l8 7"></path></svg>
+                  </span>
+                  <div>
+                    <strong style="display: block; font-size: 14.5px; color: #101B34;">Start a 10+1 Gold Plan</strong>
+                    <span style="color: #5A6480; font-size: 13px;">Pay 10 instalments, BlueStone pays the 11th · From ₹2,000/mo</span>
+                  </div>
+                </button>
+
+                <button class="option-card" onclick="addNewGiftCard(5000)">
+                  <span style="width: 44px; height: 44px; border-radius: 12px; background: #FDE8F0; display: flex; align-items: center; justify-content: center; flex: none;">
+                    <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="#9C2459" stroke-width="2"><path d="M8 15h32v24h-32zM8 23h32M24 15v24M24 15c-3 -6 -9 -5 -8 -1c.5 2 4 1 8 1c4 0 7.5 1 8 -1c1 -4 -5 -5 -8 1"></path></svg>
+                  </span>
+                  <div>
+                    <strong style="display: block; font-size: 14.5px; color: #101B34;">Instant E-Gift Card</strong>
+                    <span style="color: #5A6480; font-size: 13px;">Delivered digitally with personalized greeting</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Recommendation Tabs -->
+              <div style="border-top: 1px solid #E3E6EE; padding-top: 18px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;" role="tablist">
+                  <button class="filter-tab" id="tabWish" aria-pressed="true" onclick="setCatalogTab('wish')">Wishlist</button>
+                  <button class="filter-tab" id="tabRecent" aria-pressed="false" onclick="setCatalogTab('recent')">Recently Viewed</button>
+                  <button class="filter-tab" id="tabRec" aria-pressed="false" onclick="setCatalogTab('rec')">Recommended For You</button>
+                </div>
+                
+                <div id="catalogList" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;">
+          <div style="width: 190px; flex: none; display: flex; flex-direction: column; gap: 8px; background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 14px; padding: 12px;">
+            <div style="background: #E8EDFB; height: 110px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 48 48" width="54" height="54" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="M10 8Q24 30 38 8M24 27l5.2 7.2a6.4 6.4 0 1 1 -10.4 0z"></path></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 13px; color: #101B34; min-height: 36px; line-height: 1.3;">Solitaire Drop Pendant</div>
+            <div style="font-weight: 700; font-size: 14.5px; color: #101B34;">₹24,600</div>
+            <button class="btn btn-secondary" style="min-height: 38px; font-size: 13px; padding: 0 12px;" onclick="addCatalogItem('c2')">
+              + Add
+            </button>
+          </div>
+        
+          <div style="width: 190px; flex: none; display: flex; flex-direction: column; gap: 8px; background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 14px; padding: 12px;">
+            <div style="background: #E8EDFB; height: 110px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 48 48" width="54" height="54" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="M16 18v-6M32 18v-6M8 27a8 8 0 1 0 16 0a8 8 0 1 0 -16 0M24 27a8 8 0 1 0 16 0a8 8 0 1 0 -16 0"></path></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 13px; color: #101B34; min-height: 36px; line-height: 1.3;">Twin Hoop Earrings</div>
+            <div style="font-weight: 700; font-size: 14.5px; color: #101B34;">₹38,200</div>
+            <button class="btn btn-secondary" style="min-height: 38px; font-size: 13px; padding: 0 12px;" onclick="addCatalogItem('c3')">
+              + Add
+            </button>
+          </div>
+        
+          <div style="width: 190px; flex: none; display: flex; flex-direction: column; gap: 8px; background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 14px; padding: 12px;">
+            <div style="background: #E8EDFB; height: 110px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 48 48" width="54" height="54" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="M8 10Q24 52 40 10M24 31l3.5 5l-3.5 5l-3.5 -5z"></path></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 13px; color: #101B34; min-height: 36px; line-height: 1.3;">Cascade Diamond Necklace</div>
+            <div style="font-weight: 700; font-size: 14.5px; color: #101B34;">₹1,38,900</div>
+            <button class="btn btn-secondary" style="min-height: 38px; font-size: 13px; padding: 0 12px;" onclick="addCatalogItem('c5')" disabled="">
+              In Cart
+            </button>
+          </div>
+        </div>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- Right Column (Sticky Summary) -->
+          <aside class="sidebar" style="flex: 1 1 380px; max-width: 440px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 90px;">
+            
+            <!-- Vouchers & Gift Cards Drawer -->
+            <section class="card" style="overflow: hidden;">
+              <button class="group-header" onclick="toggleOffers()" style="padding: 16px 20px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D3BA0" stroke-width="2"><path d="M3 12l9-9h8v8l-9 9z"></path><circle cx="15.5" cy="8.5" r="1.5"></circle></svg>
+                <strong style="flex: 1; font-size: 14.5px;">Coupons &amp; Gift Cards</strong>
+                <span id="couponAppliedCount" class="tag tag-success" style="display: none;">1 applied</span>
+                <svg id="offersChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s; transform: none;"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              
+              <div id="offersContent" style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                  <label class="form-label" for="couponInput">Apply Coupon Code</label>
+                  <div style="display: flex; gap: 8px;">
+                    <input id="couponInput" class="form-input" placeholder="e.g. BLUE10" style="text-transform: uppercase;">
+                    <button class="btn btn-secondary" style="min-height: 46px; padding: 0 18px;" onclick="applyVoucher()">Apply</button>
+                  </div>
+                  <div id="couponError" class="form-error" style="display: none;"></div>
+                  <button id="suggestedCoupon" onclick="applySuggestedCode('BLUE10')" class="tag tag-jewel" style="margin-top: 8px; border: 1px dashed rgb(29, 59, 160); padding: 5px 12px; font-size: 12.5px;">
+                    🎉 BLUE10 · 10% off jewellery (up to ₹10,000)
+                  </button>
+                </div>
+
+                <div style="border-top: 1px dashed #E3E6EE; padding-top: 12px;">
+                  <label class="form-label" for="gcInput">Redeem E-Gift Card</label>
+                  <div style="display: flex; gap: 8px;">
+                    <input id="gcInput" class="form-input" placeholder="e.g. GC4821" style="text-transform: uppercase;">
+                    <button class="btn btn-secondary" style="min-height: 46px; padding: 0 18px;" onclick="applyGiftCardCode()">Redeem</button>
+                  </div>
+                  <div id="gcError" class="form-error" style="display: none;"></div>
+                </div>
+
+                <div id="appliedCodesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              </div>
+            </section>
+
+            <!-- Order Summary Card -->
+            <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+              <div class="row-flex" style="align-items: center;">
+                <h2 class="serif-title" style="font-size: 22px;">Order Summary</h2>
+                <span id="secureIndicator" style="font-size: 12px; color: #0B6B42; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> GST Included
+                </span>
+              </div>
+
+              <!-- Category Breakdown Badges -->
+              <div id="summaryCategoryRows" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #1D3BA0; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">Fine Jewellery</div>
+              <div style="color: #5A6480; font-size: 12px;">2 piece(s) · incl. 3% GST</div>
+            </div>
+            <div style="font-weight: 600; color: #101B34;">₹2,48,539</div>
+          </div>
+        
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #7A4E00; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">Gold Investment Plans</div>
+              <div style="color: #5A6480; font-size: 12px;">1st instalment · 1 plan(s)</div>
+            </div>
+            <div style="font-weight: 600; color: #7A4E00;">₹5,000</div>
+          </div>
+        
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #9C2459; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">E-Gift Cards</div>
+              <div style="color: #5A6480; font-size: 12px;">1 digital card(s)</div>
+            </div>
+            <div style="font-weight: 600; color: #9C2459;">₹5,000</div>
+          </div>
+        </div>
+
+              <div id="summarySavingsBanner" style="background: #E3F5EC; color: #0B6B42; border-radius: 10px; padding: 10px 14px; font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l2 2 4-4"></path></svg>
+                <span>You save <strong id="savingsAmountText">₹27,100</strong> on this order</span>
+              </div>
+
+              <!-- Price Breakdown Toggle -->
+              <div style="border-top: 1px solid #E3E6EE; padding-top: 14px;">
+                <button class="btn-text btn-text-muted" onclick="togglePriceBreakdown()" style="width: 100%; justify-content: space-between; padding: 0;">
+                  <span>Detailed Price Breakdown</span>
+                  <svg id="breakdownChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transform: none;"><path d="M6 9l6 6 6-6"></path></svg>
+                </button>
+                <div id="breakdownDetails" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; font-size: 13.5px;"><div class="row-flex"><span style="color: #5A6480;">Total MRP / Face Value</span><span>₹2,78,400</span></div><div class="row-flex"><span style="color: #0B6B42;">Product Promotional Discounts</span><span style="color: #0B6B42; font-weight: 600;">−₹27,100</span></div><div class="row-flex"><span style="color: #5A6480;">GST on Jewellery (3%)</span><span>+₹7,239</span></div><div class="row-flex"><span style="color: #5A6480;">Express Shipping &amp; Transit Insurance</span><span style="color: #0B6B42; font-weight: 600;">FREE</span></div></div>
+              </div>
+
+              <!-- Grand Total -->
+              <div class="row-flex" style="align-items: baseline; border-top: 1px solid #E3E6EE; padding-top: 16px;">
+                <div>
+                  <span style="font-weight: 600; font-size: 15px; color: #101B34;">Total Payable</span>
+                  <p id="totalSubtitle" style="font-size: 12px; color: #5A6480; margin-top: 2px;">Includes all applicable taxes</p>
+                </div>
+                <span id="grandTotalText" class="serif-title" style="font-size: 30px; color: #101B34; font-weight: 700;">₹2,58,539</span>
+              </div>
+
+              <div id="goldPlanDueNote" style="display: block; background: rgb(255, 249, 238); border-left: 3px solid rgb(217, 119, 6); padding: 8px 12px; font-size: 12.5px; color: rgb(133, 77, 14); border-radius: 0px 8px 8px 0px;">
+                Gold schemes charge <strong>only the 1st monthly instalment</strong> today. Subsequent instalments recur automatically.
+              </div>
+
+              <button id="btnProceedToDetails" class="btn btn-primary" style="width: 100%;" onclick="proceedToDetails()">
+                Continue to Details &amp; Address
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </button>
+            </section>
+
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- Screen 2: Details, Nominee & Compliance View -->
+      <div id="screenDetails" class="fade-in" style="display: none;">
+        <div class="main-grid" style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;">
+          
+          <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+            
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <button class="btn-text" onclick="setScreen('cart')" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+                Back to Cart
+              </button>
+              <h1 class="serif-title" style="font-size: 32px; color: #101B34;">Details &amp; Compliance</h1>
+              <p style="color: #5A6480; font-size: 14px;">Complete your delivery information, mandatory scheme nominee, and regulatory checks.</p>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="detailsValidationBanner" style="display: none; background: #FEECEA; border: 1px solid #FECDCA; border-radius: 12px; padding: 14px 18px; color: #B42318; font-weight: 500;" role="alert">
+              <strong>Action required:</strong> Please correct highlighted fields in the sections below to proceed to payment.
+            </div>
+
+            <!-- Collapsible Order Snapshot -->
+            <section class="card" style="overflow: hidden;">
+              <div style="padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <h2 class="serif-title" style="font-size: 18px;">Items In This Order</h2>
+                  <div id="orderChipsContainer" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;"></div>
+                </div>
+                <button class="btn-text" onclick="setScreen('cart')">Edit Cart</button>
+              </div>
+              <div id="detailsOrderMiniList"></div>
+            </section>
+
+            <!-- Section: 1. Contact Information -->
+            <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="badgeContact" style="width: 30px; height: 30px; border-radius: 50%; background: #1D3BA0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">1</span>
+                <div>
+                  <h2 class="serif-title" style="font-size: 20px;">Contact Information</h2>
+                  <p style="color: #5A6480; font-size: 12.5px;">Order updates and digital invoices will be sent here</p>
+                </div>
+              </div>
+
+              <div class="grid-3">
+                <div>
+                  <label class="form-label" for="contactName">Full Name *</label>
+                  <input id="contactName" class="form-input" placeholder="e.g. Aarav Mehta" oninput="validateContact()">
+                  <div id="errContactName" class="form-error" style="display: none;">Enter your full name</div>
+                </div>
+                <div>
+                  <label class="form-label" for="contactEmail">Email Address *</label>
+                  <input id="contactEmail" type="email" class="form-input" placeholder="aarav@example.com" oninput="validateContact()">
+                  <div id="errContactEmail" class="form-error" style="display: none;">Enter a valid email</div>
+                </div>
+                <div>
+                  <label class="form-label" for="contactMobile">Mobile Number *</label>
+                  <div class="input-prefix" id="wrapContactMobile">
+                    <span>+91</span>
+                    <input id="contactMobile" type="tel" maxlength="10" placeholder="9876543210" oninput="validateContact()">
+                  </div>
+                  <div id="errContactMobile" class="form-error" style="display: none;">Enter 10-digit mobile</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: 2. Jewellery Shipping / Pickup (Conditional) -->
+            <section id="sectionShipping" class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="badgeShipping" style="width: 30px; height: 30px; border-radius: 50%; background: #1D3BA0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">2</span>
+                <div>
+                  <h2 class="serif-title" style="font-size: 20px;">Jewellery Delivery &amp; Address</h2>
+                  <p style="color: #5A6480; font-size: 12.5px;">All shipments are 100% transit-insured</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <button class="option-card" id="optHomeDelivery" aria-pressed="true" onclick="setDeliveryMethod('home')">
+                  <div>
+                    <strong style="display: block; font-size: 15px; color: #101B34;">Insured Home Delivery</strong>
+                    <span style="color: #5A6480; font-size: 13px;">Direct to your doorstep by courier</span>
+                  </div>
+                </button>
+                <button class="option-card" id="optStorePickup" aria-pressed="false" onclick="setDeliveryMethod('store')">
+                  <div>
+                    <strong style="display: block; font-size: 15px; color: #101B34;">Store Pickup</strong>
+                    <span style="color: #5A6480; font-size: 13px;">Pick up at an exclusive BlueStone boutique</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Home Delivery Address Inputs -->
+              <div id="homeAddressForm" class="grid-2" style="margin-top: 6px;">
+                <div style="grid-column: 1 / -1;">
+                  <label class="form-label" for="shipAddress">Street Address *</label>
+                  <input id="shipAddress" class="form-input" placeholder="Flat / House No., Building, Street Name" oninput="validateShipping()">
+                  <div id="errShipAddress" class="form-error" style="display: none;">Please provide street address</div>
+                </div>
+                <div>
+                  <label class="form-label" for="shipPincode">Pincode *</label>
+                  <input id="shipPincode" class="form-input" maxlength="6" placeholder="e.g. 560038" oninput="handlePincodeLookup(this.value, 'ship')">
+                  <div id="errShipPincode" class="form-error" style="display: none;">Enter valid 6-digit pincode</div>
+                </div>
+                <div>
+                  <label class="form-label" for="shipCity">City *</label>
+                  <input id="shipCity" class="form-input" placeholder="City" oninput="validateShipping()">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                  <label class="form-label" for="shipState">State *</label>
+                  <input id="shipState" class="form-input" placeholder="State" oninput="validateShipping()">
+                </div>
+              </div>
+
+              <!-- Store Pickup Selector -->
+              <div id="storePickupForm" style="display: none; flex-direction: column; gap: 10px;">
+                <label class="form-label">Select BlueStone Store for Collection</label>
+                <div id="storeLocationsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                <p style="font-size: 12.5px; color: #5A6480; margin-top: 4px;">⚠️ Please carry an official government photo ID and your order confirmation SMS at time of collection.</p>
+              </div>
+            </section>
+
+            <!-- Section: 3. Gold Plan Nominees & Billing (Conditional) -->
+            <section id="sectionGoldPlanNominees" class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="badgeNominee" style="width: 30px; height: 30px; border-radius: 50%; background: #1D3BA0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">3</span>
+                <div>
+                  <h2 class="serif-title" style="font-size: 20px;">Gold Plan Nominee &amp; Billing</h2>
+                  <p style="color: #5A6480; font-size: 12.5px;">Statutory requirement for gold maturity ownership</p>
+                </div>
+              </div>
+
+              <div id="goldNomineesList" style="display: flex; flex-direction: column; gap: 16px;"></div>
+
+              <!-- Billing Address for Gold Plans -->
+              <div style="border-top: 1px solid #E3E6EE; padding-top: 18px; display: flex; flex-direction: column; gap: 12px;">
+                <h3 style="font-size: 15px; font-weight: 600; color: #101B34;">Billing Address for Gold Plan Invoicing</h3>
+                <label id="lblSameAsDelivery" style="display: flex; align-items: center; gap: 10px; font-weight: 500;">
+                  <input type="checkbox" id="chkSameAsDelivery" checked="" onchange="toggleBillingAddressForm()" style="width: 18px; height: 18px; accent-color: #1D3BA0;">
+                  Same as delivery address
+                </label>
+
+                <div id="planBillingAddressForm" class="grid-2" style="display: none;">
+                  <div style="grid-column: 1 / -1;">
+                    <label class="form-label" for="billAddress">Billing Address *</label>
+                    <input id="billAddress" class="form-input" placeholder="House / Flat, Area" oninput="validateBilling()">
+                    <div id="errBillAddress" class="form-error" style="display: none;">Billing address is required</div>
+                  </div>
+                  <div>
+                    <label class="form-label" for="billPincode">Pincode *</label>
+                    <input id="billPincode" class="form-input" maxlength="6" placeholder="Pincode" oninput="handlePincodeLookup(this.value, 'bill')">
+                  </div>
+                  <div>
+                    <label class="form-label" for="billCity">City *</label>
+                    <input id="billCity" class="form-input" placeholder="City">
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section: 4. PAN Verification (>₹2,00,000 regulatory check) -->
+            <section id="sectionPanCompliance" class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span id="badgePan" style="width: 30px; height: 30px; border-radius: 50%; background: #1D3BA0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">4</span>
+                <div style="flex: 1;">
+                  <h2 class="serif-title" style="font-size: 20px;">PAN Card Verification</h2>
+                  <p style="color: #5A6480; font-size: 12.5px;">Government mandate (Rule 114B of Income Tax Rules) for purchases above ₹2,00,000</p>
+                </div>
+                <span class="tag tag-gold">Mandatory Compliance</span>
+              </div>
+
+              <!-- Unverified input view -->
+              <div id="panInputSection" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                  <div style="flex: 1 1 240px; max-width: 320px;">
+                    <label class="form-label" for="panNumberInput">Permanent Account Number (PAN) *</label>
+                    <input id="panNumberInput" class="form-input" maxlength="10" placeholder="ABCDE1234F" style="text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;" oninput="onPanInput(this)">
+                  </div>
+                  <button id="btnVerifyPan" class="btn btn-primary" onclick="verifyPanNumber()">Verify PAN</button>
+                </div>
+                <div id="errPanMessage" class="form-error" style="display: none;"></div>
+                <p style="font-size: 12px; color: #5A6480;">Demo note: enter any valid 10-char PAN format (e.g. <code>ABCDE1234F</code>). Type <code>AAAAA0000A</code> to test mismatch error.</p>
+              </div>
+
+              <!-- Verified success view -->
+              <div id="panVerifiedBanner" style="display: none; align-items: center; gap: 14px; background: #E3F5EC; border-radius: 12px; padding: 14px 18px; border: 1px solid #A6F4C5;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B6B42" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-6"></path></svg>
+                <div style="flex: 1;">
+                  <strong style="color: #0B6B42; font-size: 14.5px; display: block;">PAN Card Verified Successfully</strong>
+                  <span id="panMaskedDisplay" style="color: #2F4A3E; font-size: 13px;">ABC•••••4F · Matches customer name</span>
+                </div>
+                <button class="btn-text" onclick="resetPanVerification()">Change</button>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- Sticky Details Right Summary -->
+          <aside class="sidebar" style="flex: 1 1 380px; max-width: 440px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 90px;">
+            <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+              <h2 class="serif-title" style="font-size: 22px;">Payment Summary</h2>
+              
+              <div id="detailsSummarySplits" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+              <div class="row-flex" style="align-items: baseline; border-top: 1px solid #E3E6EE; padding-top: 16px;">
+                <div>
+                  <span style="font-weight: 600; font-size: 15px; color: #101B34;">Amount to Pay</span>
+                  <p style="font-size: 12px; color: #5A6480; margin-top: 2px;">Includes all taxes &amp; insurance</p>
+                </div>
+                <span id="detailsGrandTotalText" class="serif-title" style="font-size: 30px; color: #101B34; font-weight: 700;">₹2,58,539</span>
+              </div>
+
+              <button class="btn btn-primary" style="width: 100%;" onclick="validateAndProceedToPayment()">
+                Continue to Payment
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </button>
+
+              <div style="font-size: 12px; color: #5A6480; line-height: 1.5; text-align: center;">
+                🔒 256-bit encrypted checkout. Verified by VISA, MasterCard, &amp; RuPay.
+              </div>
+            </section>
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- Screen 3: Payment & Final Review View -->
+      <div id="screenPay" class="fade-in" style="display: none;">
+        <div style="max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+          
+          <div class="card" style="padding: 36px 32px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #E3F5EC; display: flex; align-items: center; justify-content: center; color: #0B6B42;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5 9-10"></path></svg>
+            </div>
+            <div>
+              <h1 class="serif-title" style="font-size: 28px; color: #101B34;">Order Details Confirmed</h1>
+              <p style="color: #5A6480; margin-top: 4px; font-size: 14.5px;">Choose your payment method below to complete your BlueStone purchase.</p>
+            </div>
+
+            <!-- Summary Table of Order Items -->
+            <div style="width: 100%; text-align: left; border-top: 1px solid #E3E6EE; padding-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+              <div id="payItemsSummaryList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+              
+              <div class="row-flex" style="border-top: 1px solid #E3E6EE; padding-top: 16px; align-items: baseline;">
+                <span style="font-weight: 700; font-size: 16px;">Final Payable Amount:</span>
+                <span id="payGrandTotalText" class="serif-title" style="font-size: 32px; color: #1D3BA0; font-weight: 700;">₹2,58,539</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Options -->
+          <div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 18px;">
+            <h2 class="serif-title" style="font-size: 20px;">Select Payment Option</h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <label class="option-card">
+                <input type="radio" name="payMethod" checked="" style="width: 20px; height: 20px; accent-color: #1D3BA0; margin-top: 2px;">
+                <div style="flex: 1;">
+                  <strong style="display: block; font-size: 15px;">UPI / QR (Google Pay, PhonePe, Paytm)</strong>
+                  <span style="color: #5A6480; font-size: 13px;">Instant zero-fee payment with high bank success rates</span>
+                </div>
+                <span class="tag tag-success">Fastest</span>
+              </label>
+
+              <label class="option-card">
+                <input type="radio" name="payMethod" style="width: 20px; height: 20px; accent-color: #1D3BA0; margin-top: 2px;">
+                <div style="flex: 1;">
+                  <strong style="display: block; font-size: 15px;">Credit / Debit Card (Visa, Mastercard, RuPay, Amex)</strong>
+                  <span style="color: #5A6480; font-size: 13px;">No-cost EMI available on leading credit cards</span>
+                </div>
+              </label>
+
+              <label class="option-card">
+                <input type="radio" name="payMethod" style="width: 20px; height: 20px; accent-color: #1D3BA0; margin-top: 2px;">
+                <div style="flex: 1;">
+                  <strong style="display: block; font-size: 15px;">Net Banking (All Indian Banks)</strong>
+                  <span style="color: #5A6480; font-size: 13px;">HDFC, ICICI, SBI, Axis, Kotak and 50+ other banks</span>
+                </div>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 14px; margin-top: 8px;">
+              <button class="btn btn-secondary" onclick="setScreen('details')" style="flex: 1;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+                Back to Details
+              </button>
+              <button class="btn btn-primary" onclick="completeDemoOrder()" style="flex: 2;">
+                Pay Securely Now
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Mobile Fixed Bottom Action Bar -->
+    <div class="mobile-bar" style="position: fixed; left: 0; right: 0; bottom: 0; background: #ffffff; border-top: 1px solid #E3E6EE; padding: 12px 18px; align-items: center; justify-content: space-between; gap: 14px; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,0.06);">
+      <div>
+        <div style="color: #5A6480; font-size: 11px; text-transform: uppercase; font-weight: 600;">Total Payable</div>
+        <div id="mobileTotalText" class="serif-title" style="font-size: 22px; font-weight: 700; color: #101B34;">₹2,58,539</div>
+      </div>
+      <button id="mobileCtaBtn" class="btn btn-primary" onclick="handleMobileCta()" style="min-height: 44px; padding: 0 20px;">Continue to Details</button>
+    </div>
+
+  </div>
+
+  <!-- Prototype Logic Engine -->
+  <script>
+    // Master Catalog Data
+    const CATALOG = [
+      { cid: 'c1', name: 'Aurelia Diamond Ring', glyph: 'ring', mrp: 47800, price: 42300, offer: 'Flat 12% off on diamonds', metal: '18 KT Rose Gold · 3.1 g', stone: 'Diamond · 0.22 ct · SI / IJ', sizes: ['10', '11', '12', '13', '14'], size: '12', delivery: 'Wed, 4 Nov', dRank: 4, tabs: ['recent', 'rec'] },
+      { cid: 'c2', name: 'Solitaire Drop Pendant', glyph: 'pendant', mrp: 27900, price: 24600, offer: 'Flat 12% off on diamonds', metal: '14 KT White Gold · 1.8 g', stone: 'Diamond · 0.15 ct · SI / IJ', sizes: null, size: '', delivery: 'Sat, 31 Oct', dRank: 1, tabs: ['wish', 'rec'] },
+      { cid: 'c3', name: 'Twin Hoop Earrings', glyph: 'earrings', mrp: 43500, price: 38200, offer: 'Festive offer: 12% off', metal: '18 KT Yellow Gold · 3.4 g', stone: 'Diamond accents · 0.10 ct', sizes: null, size: '', delivery: 'Mon, 2 Nov', dRank: 2, tabs: ['wish', 'recent'] },
+      { cid: 'c4', name: 'Classic Gold Bangle', glyph: 'bangle', mrp: 108500, price: 102400, offer: 'Making charges 20% off', metal: '22 KT Yellow Gold · 14.6 g', stone: 'Plain gold, no stone', sizes: ['2.4', '2.6', '2.8'], size: '2.6', delivery: 'Mon, 9 Nov', dRank: 7, tabs: ['recent', 'rec'] },
+      { cid: 'c5', name: 'Cascade Diamond Necklace', glyph: 'necklace', mrp: 159900, price: 138900, offer: 'Flat 13% off on diamonds', metal: '18 KT White Gold · 11.2 g', stone: 'Diamond · 1.12 ct · VS / GH', sizes: ['16 in', '18 in'], size: '16 in', delivery: 'Fri, 6 Nov', dRank: 6, tabs: ['wish', 'rec'] },
+      { cid: 'c6', name: 'Leaf Stud Earrings', glyph: 'earrings', mrp: 15900, price: 13900, offer: 'Festive offer: 12% off', metal: '18 KT Rose Gold · 1.9 g', stone: 'Diamond accents · 0.06 ct', sizes: null, size: '', delivery: 'Sat, 31 Oct', dRank: 1, tabs: ['recent', 'rec'] }
+    ];
+
+    const SVG_GLYPHS = {
+      ring: 'M14 32a10 10 0 1 0 20 0a10 10 0 1 0 -20 0M19 16l2.5 -5h5l2.5 5l-5 6z',
+      pendant: 'M10 8Q24 30 38 8M24 27l5.2 7.2a6.4 6.4 0 1 1 -10.4 0z',
+      earrings: 'M16 18v-6M32 18v-6M8 27a8 8 0 1 0 16 0a8 8 0 1 0 -16 0M24 27a8 8 0 1 0 16 0a8 8 0 1 0 -16 0',
+      bangle: 'M7 24a17 7 0 1 0 34 0a17 7 0 1 0 -34 0M11 26a13 5 0 0 0 26 0',
+      necklace: 'M8 10Q24 52 40 10M24 31l3.5 5l-3.5 5l-3.5 -5z',
+      plan: 'M10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0M18 19h12M18 24h12M21 19c7 0 7 8 0 8l8 7',
+      gift: 'M8 15h32v24h-32zM8 23h32M24 15v24M24 15c-3 -6 -9 -5 -8 -1c.5 2 4 1 8 1c4 0 7.5 1 8 -1c1 -4 -5 -5 -8 1'
+    };
+
+    const STORE_LOCATIONS = [
+      { id: 's1', name: 'BlueStone Indiranagar', area: '100 Feet Road, Bengaluru' },
+      { id: 's2', name: 'BlueStone Bandra West', area: 'Linking Road, Mumbai' },
+      { id: 's3', name: 'BlueStone Connaught Place', area: 'Block F, New Delhi' }
+    ];
+
+    // Prototype State
+    let state = {
+      screen: 'cart', // 'cart' | 'details' | 'pay'
+      scenario: 'all',
+      items: [],
+      collapsed: { jewellery: false, plans: false, gifts: false },
+      offersOpen: true,
+      priceBreakdownOpen: true,
+      activeCatalogTab: 'wish',
+      wishExtra: [],
+      voucher: null,
+      giftCardCode: null,
+      lastAction: null,
+      
+      // Details form state
+      contact: { name: 'Aarav Mehta', email: 'aarav.mehta@example.com', mobile: '9876543210' },
+      deliveryMethod: 'home',
+      selectedStore: 's1',
+      homeAddress: { address: 'Flat 402, Pebble Woods, Indiranagar', pincode: '560038', city: 'Bengaluru', state: 'Karnataka' },
+      billingAddress: { address: '', pincode: '', city: '' },
+      sameAsDelivery: true,
+      nominees: {}, // keyed by plan item id
+      sameNomineeAsFirst: {}, // keyed by plan item id
+      
+      // Regulatory PAN
+      panNumber: 'ABCDE1234F',
+      panVerified: true
+    };
+
+    // Scenarios setup
+    function getScenarioItems(key) {
+      const g1 = { id: 'g1', type: 'gift', value: 5000, occasion: 'Birthday', rName: 'Meera Mehta', rEmail: 'meera.mehta@example.com', sName: 'Aarav Mehta', isEditing: false };
+      const g2 = { id: 'g2', type: 'gift', value: 2000, occasion: 'Anniversary', rName: 'Kabir Rao', rEmail: 'kabir.rao@example.com', sName: 'Aarav Mehta', isEditing: false };
+      const p1 = { id: 'p1', type: 'plan', scheme: 'GMS', monthly: 5000 };
+      const p2 = { id: 'p2', type: 'plan', scheme: 'GRP', monthly: 10000 };
+
+      const j1 = Object.assign({}, CATALOG[0], { id: 'j_c1', type: 'jewellery', qty: 1 });
+      const j2 = Object.assign({}, CATALOG[1], { id: 'j_c2', type: 'jewellery', qty: 1 });
+      const j3 = Object.assign({}, CATALOG[2], { id: 'j_c3', type: 'jewellery', qty: 1 });
+      const j4 = Object.assign({}, CATALOG[3], { id: 'j_c4', type: 'jewellery', qty: 1 });
+      const j5 = Object.assign({}, CATALOG[4], { id: 'j_c5', type: 'jewellery', qty: 1 });
+
+      if (key === 'j') return [j1, j3];
+      if (key === 'jg') return [j2, g1];
+      if (key === 'jgms') return [j4, p1];
+      if (key === 'gms') return [p1, p2];
+      if (key === 'many') return [j1, j2, j3, j4, p1, p2, g1, g2];
+      // default 'all' (High value >₹2L triggers PAN)
+      return [j5, j4, p1, g1];
+    }
+
+    const SCENARIOS = [
+      { id: 'all', label: 'All Items (>₹2L with PAN)' },
+      { id: 'j', label: 'Jewellery Only' },
+      { id: 'jg', label: 'Jewellery + Gift Card' },
+      { id: 'jgms', label: 'Jewellery + Gold Plan' },
+      { id: 'gms', label: 'Gold Plans Only (GMS/GRP)' },
+      { id: 'many', label: 'Many Items Multi-Category' }
+    ];
+
+    // Helper currency formatter
+    function inr(n) {
+      return '₹' + Math.round(Math.abs(n || 0)).toLocaleString('en-IN');
+    }
+
+    function initPrototype() {
+      state.items = getScenarioItems('all');
+      renderScenarioTabs();
+      renderAll();
+    }
+
+    function setScenario(scId) {
+      state.scenario = scId;
+      state.items = getScenarioItems(scId);
+      state.screen = 'cart';
+      state.voucher = null;
+      state.giftCardCode = null;
+      renderScenarioTabs();
+      renderAll();
+      showToast('Loaded scenario: ' + SCENARIOS.find(s => s.id === scId).label);
+    }
+
+    function setScreen(scr) {
+      state.screen = scr;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      renderAll();
+    }
+
+    // Calculations
+    function computeCart() {
+      const jew = state.items.filter(i => i.type === 'jewellery');
+      const plans = state.items.filter(i => i.type === 'plan');
+      const gifts = state.items.filter(i => i.type === 'gift');
+
+      const mrp = jew.reduce((acc, i) => acc + (i.mrp * i.qty), 0);
+      const sale = jew.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      const prodDisc = mrp - sale;
+
+      // 10% voucher up to 10k only on jewellery
+      const vAmt = (state.voucher && jew.length) ? Math.min(Math.round(sale * 0.1), 10000) : 0;
+      const taxable = Math.max(0, sale - vAmt);
+      const gst = Math.round(taxable * 0.03); // 3% jewellery GST
+
+      // Gift card code redemption
+      const gcAmt = (state.giftCardCode && jew.length) ? Math.min(state.giftCardCode.balance, taxable + gst) : 0;
+      const jewPay = Math.max(0, taxable + gst - gcAmt);
+
+      const planDue = plans.reduce((acc, i) => acc + i.monthly, 0);
+      const giftTotal = gifts.reduce((acc, i) => acc + i.value, 0);
+
+      const total = jewPay + planDue + giftTotal;
+      const totalSavings = prodDisc + vAmt + gcAmt;
+      const needPan = total > 200000;
+
+      return {
+        jew, plans, gifts,
+        mrp, sale, prodDisc, vAmt, gst, gcAmt, jewPay, planDue, giftTotal,
+        total, totalSavings, needPan,
+        subtotal: mrp + planDue + giftTotal
+      };
+    }
+
+    // Rendering functions
+    function renderScenarioTabs() {
+      const container = document.getElementById('scenarioTabs');
+      container.innerHTML = SCENARIOS.map(sc => `
+        <button class="scenario-pill" aria-pressed="${state.scenario === sc.id}" onclick="setScenario('${sc.id}')">
+          ${sc.label}
+        </button>
+      `).join('');
+    }
+
+    function renderStepper() {
+      const stepper = document.getElementById('checkoutStepper');
+      const steps = [
+        { key: 'cart', n: '1', title: 'Cart' },
+        { key: 'details', n: '2', title: 'Details & Address' },
+        { key: 'pay', n: '3', title: 'Payment' }
+      ];
+      const orderMap = { cart: 0, details: 1, pay: 2 };
+      const currentIdx = orderMap[state.screen];
+
+      stepper.innerHTML = steps.map((st, i) => {
+        const isDone = i < currentIdx;
+        const isCurrent = i === currentIdx;
+        const dotBg = isDone ? '#0B6B42' : (isCurrent ? '#1D3BA0' : '#E3E6EE');
+        const dotColor = (isDone || isCurrent) ? '#ffffff' : '#5A6480';
+        const labelWeight = isCurrent ? '700' : '500';
+        const labelColor = isCurrent ? '#101B34' : '#5A6480';
+
+        return `
+          <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="${isDone ? `setScreen('${st.key}')` : ''}">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: ${dotBg}; color: ${dotColor}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">
+              ${isDone ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>` : st.n}
+            </span>
+            <span style="font-size: 13.5px; font-weight: ${labelWeight}; color: ${labelColor};">${st.title}</span>
+            ${i < steps.length - 1 ? `<span style="width: 24px; height: 2px; background: #C9CFDD; border-radius: 2px;"></span>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      renderStepper();
+      const calc = computeCart();
+
+      // Show/hide screen views
+      document.getElementById('screenCart').style.display = state.screen === 'cart' ? 'block' : 'none';
+      document.getElementById('screenDetails').style.display = state.screen === 'details' ? 'block' : 'none';
+      document.getElementById('screenPay').style.display = state.screen === 'pay' ? 'block' : 'none';
+
+      // Update Header counts
+      const totalItemCount = state.items.length;
+      document.getElementById('cartCountBadge').textContent = totalItemCount + (totalItemCount === 1 ? ' item' : ' items');
+      document.getElementById('cartEmptyState').style.display = totalItemCount === 0 ? 'flex' : 'none';
+
+      // Grand totals
+      document.getElementById('grandTotalText').textContent = inr(calc.total);
+      document.getElementById('detailsGrandTotalText').textContent = inr(calc.total);
+      document.getElementById('payGrandTotalText').textContent = inr(calc.total);
+      document.getElementById('mobileTotalText').textContent = inr(calc.total);
+
+      // Mobile button title
+      const mobileBtn = document.getElementById('mobileCtaBtn');
+      if (state.screen === 'cart') mobileBtn.textContent = 'Continue to Details';
+      else if (state.screen === 'details') mobileBtn.textContent = 'Continue to Payment';
+      else mobileBtn.textContent = 'Pay ' + inr(calc.total);
+
+      // Render cart items
+      renderCartGroups(calc);
+      renderOffers(calc);
+      renderOrderSummary(calc);
+      renderCatalog();
+
+      // Render details screen if active
+      if (state.screen === 'details') {
+        renderDetailsScreen(calc);
+      } else if (state.screen === 'pay') {
+        renderPayScreen(calc);
+      }
+    }
+
+    function renderCartGroups(calc) {
+      // Group: Jewellery
+      const grpJew = document.getElementById('groupJewellery');
+      if (calc.jew.length === 0) {
+        grpJew.style.display = 'none';
+      } else {
+        grpJew.style.display = 'block';
+        document.getElementById('jewSummaryText').textContent = `${calc.jew.reduce((a,i)=>a+i.qty,0)} items`;
+        document.getElementById('jewSubtotal').textContent = inr(calc.sale);
+        document.getElementById('jewChevron').style.transform = state.collapsed.jewellery ? 'rotate(-90deg)' : 'none';
+        
+        const listEl = document.getElementById('jewListContainer');
+        if (state.collapsed.jewellery) {
+          listEl.innerHTML = '';
+        } else {
+          listEl.innerHTML = calc.jew.map(it => `
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap; align-items: flex-start;">
+              <div style="background: #E8EDFB; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="${SVG_GLYPHS[it.glyph] || SVG_GLYPHS.ring}"/></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">${it.name}</h3>
+                    <span class="tag tag-success" style="margin-top: 4px;">${it.offer}</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: 700; font-size: 18px; color: #101B34;">${inr(it.price * it.qty)}</div>
+                    <div style="color: #5A6480; font-size: 13px;">
+                      <s>${inr(it.mrp * it.qty)}</s> <span style="color: #0B6B42; font-weight: 600;">${Math.round((1 - it.price/it.mrp)*100)}% off</span>
+                    </div>
+                    ${it.qty > 1 ? `<div style="font-size: 12px; color: #5A6480;">${inr(it.price)} each</div>` : ''}
+                  </div>
+                </div>
+
+                <div style="font-size: 13px; color: #4A5470;">
+                  <div>${it.metal}</div>
+                  <div>${it.stone}</div>
+                </div>
+
+                <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-top: 4px;">
+                  ${it.sizes ? `
+                    <div style="width: 110px;">
+                      <label class="form-label" style="margin-bottom: 4px;">Ring Size</label>
+                      <select class="form-input" style="min-height: 40px; padding: 0 10px;" onchange="updateItemSize('${it.id}', this.value)">
+                        ${it.sizes.map(s => `<option value="${s}" ${s === it.size ? 'selected' : ''}>${s}</option>`).join('')}
+                      </select>
+                    </div>
+                  ` : ''}
+
+                  <div>
+                    <span class="form-label" style="margin-bottom: 4px;">Quantity</span>
+                    <div style="display: inline-flex; align-items: center; border: 1px solid #AEB6C8; border-radius: 10px; overflow: hidden; background: #fff;">
+                      <button class="qty-btn" onclick="updateQty('${it.id}', -1)" ${it.qty <= 1 ? 'disabled' : ''}>−</button>
+                      <span style="min-width: 36px; text-align: center; font-weight: 600; font-size: 14px;">${it.qty}</span>
+                      <button class="qty-btn" onclick="updateQty('${it.id}', 1)">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; color: #0B6B42; font-weight: 600; font-size: 13px; margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+                  Delivery by ${it.delivery} (Express Insured)
+                </div>
+
+                <div style="display: flex; gap: 14px; margin-top: 4px;">
+                  <button class="btn-text" onclick="moveToWishlist('${it.id}')">Move to Wishlist</button>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('${it.id}')">Remove</button>
+                </div>
+              </div>
+            </article>
+          `).join('');
+        }
+      }
+
+      // Group: Gold Plans
+      const grpPlans = document.getElementById('groupPlans');
+      if (calc.plans.length === 0) {
+        grpPlans.style.display = 'none';
+      } else {
+        grpPlans.style.display = 'block';
+        document.getElementById('planSummaryText').textContent = `${calc.plans.length} active plan(s)`;
+        document.getElementById('planSubtotal').textContent = inr(calc.planDue) + ' due today';
+        document.getElementById('planChevron').style.transform = state.collapsed.plans ? 'rotate(-90deg)' : 'none';
+
+        const listEl = document.getElementById('planListContainer');
+        if (state.collapsed.plans) {
+          listEl.innerHTML = '';
+        } else {
+          listEl.innerHTML = calc.plans.map((p, idx) => `
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap;">
+              <div style="background: #FFF1D6; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#7A4E00" stroke-width="1.5"><path d="${SVG_GLYPHS.plan}"/></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">
+                      ${p.scheme === 'GMS' ? '10+1 Monthly Gold Scheme (GMS)' : 'Gold Rate Protection Plan (GRP)'}
+                    </h3>
+                    <span class="tag tag-gold" style="margin-top: 4px;">
+                      ${p.scheme === 'GMS' ? 'Pay 10 instalments, BlueStone pays 11th' : 'Lock gold rate against price hikes'}
+                    </span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 12px; color: #5A6480;">1st instalment due now</div>
+                    <div style="font-weight: 700; font-size: 18px; color: #7A4E00;">${inr(p.monthly)}</div>
+                  </div>
+                </div>
+
+                <div class="grid-2" style="gap: 12px 16px;">
+                  <div>
+                    <label class="form-label">Monthly Instalment Amount</label>
+                    <select class="form-input" style="min-height: 40px;" onchange="updatePlanMonthly('${p.id}', this.value)">
+                      ${[2000, 3000, 5000, 10000, 20000, 25000].map(v => `
+                        <option value="${v}" ${v === p.monthly ? 'selected' : ''}>${inr(v)} / month</option>
+                      `).join('')}
+                    </select>
+                  </div>
+                  <div>
+                    <span class="form-label">Scheme Tenure</span>
+                    <div style="min-height: 40px; display: flex; align-items: center; font-weight: 600; color: #101B34;">11 Months</div>
+                  </div>
+                </div>
+
+                <div style="background: #FFF9ED; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #78350F; line-height: 1.45;">
+                  <strong>Maturity Benefit:</strong> 
+                  ${p.scheme === 'GMS' 
+                    ? `Pay 10 monthly payments of ${inr(p.monthly)}, BlueStone contributes ${inr(p.monthly)}. Redeem ${inr(p.monthly * 11)} in jewellery.`
+                    : `Gold grams credited monthly at spot price. Redeem ${inr(p.monthly * 11)} with protection from price rises.`}
+                </div>
+
+                <div>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('${p.id}')">Remove Plan</button>
+                </div>
+              </div>
+            </article>
+          `).join('');
+        }
+      }
+
+      // Group: Gift Cards
+      const grpGifts = document.getElementById('groupGifts');
+      if (calc.gifts.length === 0) {
+        grpGifts.style.display = 'none';
+      } else {
+        grpGifts.style.display = 'block';
+        document.getElementById('giftSummaryText').textContent = `${calc.gifts.length} card(s)`;
+        document.getElementById('giftSubtotal').textContent = inr(calc.giftTotal);
+        document.getElementById('giftChevron').style.transform = state.collapsed.gifts ? 'rotate(-90deg)' : 'none';
+
+        const listEl = document.getElementById('giftListContainer');
+        if (state.collapsed.gifts) {
+          listEl.innerHTML = '';
+        } else {
+          listEl.innerHTML = calc.gifts.map(g => `
+            <article style="display: flex; gap: 18px; padding: 20px; border-top: 1px solid #E3E6EE; flex-wrap: wrap;">
+              <div style="background: #FDE8F0; width: 104px; height: 104px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;">
+                <svg viewBox="0 0 48 48" width="60" height="60" fill="none" stroke="#9C2459" stroke-width="1.5"><path d="${SVG_GLYPHS.gift}"/></svg>
+              </div>
+              <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+                <div class="row-flex" style="align-items: flex-start; flex-wrap: wrap;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #101B34;">${g.occasion} Digital Gift Card</h3>
+                    <span class="tag tag-gift" style="margin-top: 4px;">Instant Email Delivery</span>
+                  </div>
+                  <div style="font-weight: 700; font-size: 18px; color: #9C2459;">${inr(g.value)}</div>
+                </div>
+
+                ${!g.isEditing && g.rName && g.rEmail ? `
+                  <div style="font-size: 13.5px; color: #3A4560; background: #FAFBFD; padding: 10px 14px; border-radius: 10px; border: 1px solid #E3E6EE;">
+                    <div><span style="color: #5A6480;">To:</span> <strong>${g.rName}</strong> (${g.rEmail})</div>
+                    <div><span style="color: #5A6480;">From:</span> <strong>${g.sName || 'You'}</strong></div>
+                  </div>
+                ` : `
+                  <div class="grid-2" style="background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 12px; padding: 16px; gap: 12px;">
+                    <div>
+                      <label class="form-label">Occasion</label>
+                      <select class="form-input" style="min-height: 40px;" onchange="updateGiftCardField('${g.id}', 'occasion', this.value)">
+                        <option value="Birthday" ${g.occasion==='Birthday'?'selected':''}>Birthday</option>
+                        <option value="Anniversary" ${g.occasion==='Anniversary'?'selected':''}>Anniversary</option>
+                        <option value="Wedding" ${g.occasion==='Wedding'?'selected':''}>Wedding</option>
+                        <option value="Festive" ${g.occasion==='Festive'?'selected':''}>Festive Celebration</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Denomination</label>
+                      <select class="form-input" style="min-height: 40px;" onchange="updateGiftCardField('${g.id}', 'value', Number(this.value))">
+                        ${[1000, 2000, 5000, 10000, 25000].map(v => `
+                          <option value="${v}" ${v === g.value ? 'selected' : ''}>${inr(v)}</option>
+                        `).join('')}
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Recipient Name *</label>
+                      <input class="form-input" value="${g.rName || ''}" placeholder="Friend's Name" oninput="updateGiftCardField('${g.id}', 'rName', this.value)">
+                    </div>
+                    <div>
+                      <label class="form-label">Recipient Email *</label>
+                      <input type="email" class="form-input" value="${g.rEmail || ''}" placeholder="friend@example.com" oninput="updateGiftCardField('${g.id}', 'rEmail', this.value)">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                      <label class="form-label">Sender Name *</label>
+                      <input class="form-input" value="${g.sName || ''}" placeholder="Your Name" oninput="updateGiftCardField('${g.id}', 'sName', this.value)">
+                    </div>
+                  </div>
+                `}
+
+                <div style="display: flex; gap: 14px;">
+                  <button class="btn-text" onclick="toggleGiftEditing('${g.id}')">
+                    ${g.isEditing ? 'Save Details' : 'Edit Greeting'}
+                  </button>
+                  <button class="btn-text btn-text-muted" onclick="removeItem('${g.id}')">Remove</button>
+                </div>
+              </div>
+            </article>
+          `).join('');
+        }
+      }
+    }
+
+    function renderOffers(calc) {
+      document.getElementById('offersContent').style.display = state.offersOpen ? 'flex' : 'none';
+      document.getElementById('offersChevron').style.transform = state.offersOpen ? 'none' : 'rotate(-90deg)';
+
+      const appliedList = document.getElementById('appliedCodesList');
+      const badge = document.getElementById('couponAppliedCount');
+      const items = [];
+
+      if (state.voucher) {
+        items.push(`
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #F3FAF6; border: 1px solid #A6F4C5; border-radius: 10px; padding: 8px 14px;">
+            <div>
+              <strong style="color: #0B6B42;">${state.voucher.code}</strong>
+              <div style="font-size: 12px; color: #4A5470;">10% off diamonds on fine jewellery</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 700; color: #0B6B42;">−${inr(calc.vAmt)}</span>
+              <button class="btn-text" style="color: #B42318;" onclick="removeVoucher()">✕</button>
+            </div>
+          </div>
+        `);
+      }
+
+      if (state.giftCardCode) {
+        items.push(`
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #F3FAF6; border: 1px solid #A6F4C5; border-radius: 10px; padding: 8px 14px;">
+            <div>
+              <strong style="color: #0B6B42;">${state.giftCardCode.code}</strong>
+              <div style="font-size: 12px; color: #4A5470;">Gift card credit redeemed</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 700; color: #0B6B42;">−${inr(calc.gcAmt)}</span>
+              <button class="btn-text" style="color: #B42318;" onclick="removeGiftCardCode()">✕</button>
+            </div>
+          </div>
+        `);
+      }
+
+      appliedList.innerHTML = items.join('');
+      if (items.length > 0) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = `${items.length} applied`;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function renderOrderSummary(calc) {
+      // Split rows
+      const catRows = document.getElementById('summaryCategoryRows');
+      const splits = [];
+
+      if (calc.jew.length > 0) {
+        splits.push(`
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #1D3BA0; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">Fine Jewellery</div>
+              <div style="color: #5A6480; font-size: 12px;">${calc.jew.reduce((a,i)=>a+i.qty,0)} piece(s) · incl. 3% GST</div>
+            </div>
+            <div style="font-weight: 600; color: #101B34;">${inr(calc.jewPay)}</div>
+          </div>
+        `);
+      }
+
+      if (calc.plans.length > 0) {
+        splits.push(`
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #7A4E00; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">Gold Investment Plans</div>
+              <div style="color: #5A6480; font-size: 12px;">1st instalment · ${calc.plans.length} plan(s)</div>
+            </div>
+            <div style="font-weight: 600; color: #7A4E00;">${inr(calc.planDue)}</div>
+          </div>
+        `);
+      }
+
+      if (calc.gifts.length > 0) {
+        splits.push(`
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #9C2459; margin-top: 6px; flex: none;"></span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: #101B34;">E-Gift Cards</div>
+              <div style="color: #5A6480; font-size: 12px;">${calc.gifts.length} digital card(s)</div>
+            </div>
+            <div style="font-weight: 600; color: #9C2459;">${inr(calc.giftTotal)}</div>
+          </div>
+        `);
+      }
+
+      catRows.innerHTML = splits.join('');
+
+      // Savings banner
+      const savBanner = document.getElementById('summarySavingsBanner');
+      if (calc.totalSavings > 0) {
+        savBanner.style.display = 'flex';
+        document.getElementById('savingsAmountText').textContent = inr(calc.totalSavings);
+      } else {
+        savBanner.style.display = 'none';
+      }
+
+      // Breakdown rows
+      const bkDetails = document.getElementById('breakdownDetails');
+      document.getElementById('breakdownChevron').style.transform = state.priceBreakdownOpen ? 'none' : 'rotate(-90deg)';
+      if (!state.priceBreakdownOpen) {
+        bkDetails.style.display = 'none';
+      } else {
+        bkDetails.style.display = 'flex';
+        const rows = [
+          `<div class="row-flex"><span style="color: #5A6480;">Total MRP / Face Value</span><span>${inr(calc.subtotal)}</span></div>`
+        ];
+        if (calc.prodDisc > 0) {
+          rows.push(`<div class="row-flex"><span style="color: #0B6B42;">Product Promotional Discounts</span><span style="color: #0B6B42; font-weight: 600;">−${inr(calc.prodDisc)}</span></div>`);
+        }
+        if (calc.vAmt > 0) {
+          rows.push(`<div class="row-flex"><span style="color: #0B6B42;">Voucher (${state.voucher.code})</span><span style="color: #0B6B42; font-weight: 600;">−${inr(calc.vAmt)}</span></div>`);
+        }
+        if (calc.gcAmt > 0) {
+          rows.push(`<div class="row-flex"><span style="color: #0B6B42;">Gift Card Credit Applied</span><span style="color: #0B6B42; font-weight: 600;">−${inr(calc.gcAmt)}</span></div>`);
+        }
+        if (calc.jew.length > 0) {
+          rows.push(`<div class="row-flex"><span style="color: #5A6480;">GST on Jewellery (3%)</span><span>+${inr(calc.gst)}</span></div>`);
+        }
+        rows.push(`<div class="row-flex"><span style="color: #5A6480;">Express Shipping &amp; Transit Insurance</span><span style="color: #0B6B42; font-weight: 600;">FREE</span></div>`);
+        bkDetails.innerHTML = rows.join('');
+      }
+
+      // Gold plan due banner
+      document.getElementById('goldPlanDueNote').style.display = calc.plans.length > 0 ? 'block' : 'none';
+    }
+
+    function renderCatalog() {
+      const container = document.getElementById('catalogList');
+      ['tabWish', 'tabRecent', 'tabRec'].forEach(t => {
+        document.getElementById(t).setAttribute('aria-pressed', state.activeCatalogTab === t.replace('tab', '').toLowerCase());
+      });
+
+      const tabKey = state.activeCatalogTab;
+      const list = CATALOG.filter(c => c.tabs.includes(tabKey) || (tabKey === 'wish' && state.wishExtra.includes(c.cid)));
+
+      container.innerHTML = list.map(item => {
+        const inCart = state.items.some(i => i.cid === item.cid);
+        return `
+          <div style="width: 190px; flex: none; display: flex; flex-direction: column; gap: 8px; background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 14px; padding: 12px;">
+            <div style="background: #E8EDFB; height: 110px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 48 48" width="54" height="54" fill="none" stroke="#1D3BA0" stroke-width="1.5"><path d="${SVG_GLYPHS[item.glyph] || SVG_GLYPHS.ring}"/></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 13px; color: #101B34; min-height: 36px; line-height: 1.3;">${item.name}</div>
+            <div style="font-weight: 700; font-size: 14.5px; color: #101B34;">${inr(item.price)}</div>
+            <button class="btn btn-secondary" style="min-height: 38px; font-size: 13px; padding: 0 12px;" onclick="addCatalogItem('${item.cid}')" ${inCart ? 'disabled' : ''}>
+              ${inCart ? 'In Cart' : '+ Add'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Details Screen Rendering
+    function renderDetailsScreen(calc) {
+      // 1. Order mini preview
+      const chipsEl = document.getElementById('orderChipsContainer');
+      const chips = [];
+      if (calc.jew.length) chips.push(`<span class="tag tag-jewel">${calc.jew.reduce((a,i)=>a+i.qty,0)} Jewellery item(s)</span>`);
+      if (calc.plans.length) chips.push(`<span class="tag tag-gold">${calc.plans.length} Gold scheme(s)</span>`);
+      if (calc.gifts.length) chips.push(`<span class="tag tag-gift">${calc.gifts.length} Gift card(s)</span>`);
+      chipsEl.innerHTML = chips.join('');
+
+      document.getElementById('detailsOrderMiniList').innerHTML = state.items.slice(0, 3).map(it => `
+        <div style="display: flex; gap: 12px; align-items: center; padding: 12px 24px; border-top: 1px solid #E3E6EE;">
+          <div style="width: 44px; height: 44px; border-radius: 8px; background: #F0F3FA; display: flex; align-items: center; justify-content: center; flex: none;">
+            <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="#1D3BA0" stroke-width="1.8"><path d="${SVG_GLYPHS[it.glyph] || SVG_GLYPHS.ring}"/></svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 600; font-size: 13.5px;">${it.name || (it.scheme ? it.scheme + ' Gold Scheme' : it.occasion + ' Gift Card')}</div>
+            <div style="font-size: 12px; color: #5A6480;">${it.qty ? 'Qty: ' + it.qty : 'Digital format'}</div>
+          </div>
+          <div style="font-weight: 600; font-size: 14px;">${inr(it.price ? it.price * (it.qty||1) : (it.monthly || it.value))}</div>
+        </div>
+      `).join('');
+
+      // Populate input defaults
+      document.getElementById('contactName').value = state.contact.name || '';
+      document.getElementById('contactEmail').value = state.contact.email || '';
+      document.getElementById('contactMobile').value = state.contact.mobile || '';
+
+      // Section visibility
+      document.getElementById('sectionShipping').style.display = calc.jew.length > 0 ? 'flex' : 'none';
+      document.getElementById('sectionGoldPlanNominees').style.display = calc.plans.length > 0 ? 'flex' : 'none';
+      document.getElementById('sectionPanCompliance').style.display = calc.needPan ? 'flex' : 'none';
+
+      // Shipping Form
+      if (calc.jew.length > 0) {
+        document.getElementById('optHomeDelivery').setAttribute('aria-pressed', state.deliveryMethod === 'home');
+        document.getElementById('optStorePickup').setAttribute('aria-pressed', state.deliveryMethod === 'store');
+        document.getElementById('homeAddressForm').style.display = state.deliveryMethod === 'home' ? 'grid' : 'none';
+        document.getElementById('storePickupForm').style.display = state.deliveryMethod === 'store' ? 'flex' : 'none';
+
+        document.getElementById('shipAddress').value = state.homeAddress.address || '';
+        document.getElementById('shipPincode').value = state.homeAddress.pincode || '';
+        document.getElementById('shipCity').value = state.homeAddress.city || '';
+        document.getElementById('shipState').value = state.homeAddress.state || '';
+
+        // Store locations list
+        document.getElementById('storeLocationsContainer').innerHTML = STORE_LOCATIONS.map(st => `
+          <button class="option-card" aria-pressed="${state.selectedStore === st.id}" onclick="selectStoreLocation('${st.id}')">
+            <div style="flex: 1;">
+              <strong style="display: block; font-size: 14.5px;">${st.name}</strong>
+              <span style="font-size: 13px; color: #5A6480;">${st.area} · Ready for collection</span>
+            </div>
+            <span class="tag tag-success">Store Pickup</span>
+          </button>
+        `).join('');
+      }
+
+      // Gold Nominees list
+      if (calc.plans.length > 0) {
+        const nomContainer = document.getElementById('goldNomineesList');
+        nomContainer.innerHTML = calc.plans.map((p, idx) => {
+          const isSame = idx > 0 && state.sameNomineeAsFirst[p.id];
+          const nomData = isSame ? (state.nominees[calc.plans[0].id] || {}) : (state.nominees[p.id] || {});
+          
+          return `
+            <div style="background: #FAFBFD; border: 1px solid #E3E6EE; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div class="row-flex" style="align-items: center;">
+                <div>
+                  <h4 style="font-size: 15px; font-weight: 600; color: #101B34;">Plan ${idx+1}: ${p.scheme === 'GMS' ? '10+1 Gold Scheme' : 'Gold Rate Protection'}</h4>
+                  <span style="font-size: 12.5px; color: #5A6480;">${inr(p.monthly)} / month tenure</span>
+                </div>
+                <span class="tag tag-gold">Nominee Required</span>
+              </div>
+
+              ${idx > 0 ? `
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer;">
+                  <input type="checkbox" ${isSame ? 'checked' : ''} onchange="toggleSameNominee('${p.id}', this.checked)" style="width: 16px; height: 16px; accent-color: #1D3BA0;">
+                  Same nominee details as Plan 1
+                </label>
+              ` : ''}
+
+              ${!isSame ? `
+                <div class="grid-3" style="gap: 12px;">
+                  <div>
+                    <label class="form-label">Nominee Name *</label>
+                    <input class="form-input" value="${nomData.name || ''}" placeholder="Full Name" oninput="setNomineeField('${p.id}', 'name', this.value)">
+                  </div>
+                  <div>
+                    <label class="form-label">Relationship *</label>
+                    <select class="form-input" onchange="setNomineeField('${p.id}', 'rel', this.value)">
+                      <option value="">Select</option>
+                      <option value="Spouse" ${nomData.rel==='Spouse'?'selected':''}>Spouse</option>
+                      <option value="Parent" ${nomData.rel==='Parent'?'selected':''}>Parent</option>
+                      <option value="Child" ${nomData.rel==='Child'?'selected':''}>Child</option>
+                      <option value="Sibling" ${nomData.rel==='Sibling'?'selected':''}>Sibling</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">Nominee Contact No. *</label>
+                    <div class="input-prefix">
+                      <span>+91</span>
+                      <input type="tel" maxlength="10" value="${nomData.mobile || ''}" placeholder="Mobile" oninput="setNomineeField('${p.id}', 'mobile', this.value)">
+                    </div>
+                  </div>
+                </div>
+              ` : `
+                <div style="background: #E8EDFB; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #1D3BA0;">
+                  ✓ Linking nominee from first scheme
+                </div>
+              `}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // PAN verification display
+      if (calc.needPan) {
+        document.getElementById('panNumberInput').value = state.panNumber;
+        document.getElementById('panInputSection').style.display = state.panVerified ? 'none' : 'flex';
+        document.getElementById('panVerifiedBanner').style.display = state.panVerified ? 'flex' : 'none';
+        if (state.panVerified) {
+          const masked = state.panNumber.substring(0,3) + '••••' + state.panNumber.substring(7);
+          document.getElementById('panMaskedDisplay').textContent = `${masked} · Verified with NSDL database`;
+        }
+      }
+
+      // Right split summaries
+      const rightSplits = document.getElementById('detailsSummarySplits');
+      rightSplits.innerHTML = document.getElementById('summaryCategoryRows').innerHTML;
+    }
+
+    // Payment Screen Rendering
+    function renderPayScreen(calc) {
+      const container = document.getElementById('payItemsSummaryList');
+      container.innerHTML = state.items.map(it => `
+        <div class="row-flex" style="padding: 6px 0; border-bottom: 1px dashed #E3E6EE;">
+          <span style="color: #3A4560;">
+            ${it.name || (it.scheme ? it.scheme + ' Gold Plan' : it.occasion + ' Gift Card')}
+            ${it.qty ? ' (x' + it.qty + ')' : ''}
+          </span>
+          <strong>${inr(it.price ? it.price * (it.qty||1) : (it.monthly || it.value))}</strong>
+        </div>
+      `).join('');
+    }
+
+    // Interactive Actions & State Mutators
+    function updateQty(id, delta) {
+      state.items = state.items.map(i => {
+        if (i.id === id) {
+          const newQty = Math.max(1, i.qty + delta);
+          return Object.assign({}, i, { qty: newQty });
+        }
+        return i;
+      });
+      renderAll();
+    }
+
+    function removeItem(id) {
+      const idx = state.items.findIndex(i => i.id === id);
+      if (idx >= 0) {
+        const item = state.items[idx];
+        state.lastAction = { type: 'remove', item, index: idx };
+        state.items = state.items.filter(i => i.id !== id);
+        renderAll();
+        showToast(`Removed "${item.name || item.scheme || 'Item'}" from cart`);
+      }
+    }
+
+    function moveToWishlist(id) {
+      const item = state.items.find(i => i.id === id);
+      if (item && item.cid) {
+        if (!state.wishExtra.includes(item.cid)) state.wishExtra.push(item.cid);
+      }
+      removeItem(id);
+      showToast('Moved item to wishlist');
+    }
+
+    function undoLastAction() {
+      if (state.lastAction && state.lastAction.type === 'remove') {
+        state.items.splice(state.lastAction.index, 0, state.lastAction.item);
+        state.lastAction = null;
+        document.getElementById('toastBar').style.display = 'none';
+        renderAll();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastBar');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        if (toast) toast.style.display = 'none';
+      }, 5000);
+    }
+
+    function updateItemSize(id, val) {
+      state.items = state.items.map(i => i.id === id ? Object.assign({}, i, { size: val }) : i);
+      renderAll();
+    }
+
+    function updatePlanMonthly(id, val) {
+      state.items = state.items.map(i => i.id === id ? Object.assign({}, i, { monthly: Number(val) }) : i);
+      renderAll();
+    }
+
+    function addNewPlan(scheme, monthly) {
+      const newId = 'p_' + Date.now();
+      state.items.push({ id: newId, type: 'plan', scheme, monthly });
+      state.collapsed.plans = false;
+      renderAll();
+      showToast(`Added new ${scheme} Gold Plan`);
+    }
+
+    function addNewGiftCard(value) {
+      const newId = 'g_' + Date.now();
+      state.items.push({ id: newId, type: 'gift', value, occasion: 'Birthday', rName: '', rEmail: '', sName: 'Aarav Mehta', isEditing: true });
+      state.collapsed.gifts = false;
+      renderAll();
+      showToast('Added customizable gift card');
+    }
+
+    function updateGiftCardField(id, field, val) {
+      state.items = state.items.map(i => i.id === id ? Object.assign({}, i, { [field]: val }) : i);
+      renderAll();
+    }
+
+    function toggleGiftEditing(id) {
+      state.items = state.items.map(i => i.id === id ? Object.assign({}, i, { isEditing: !i.isEditing }) : i);
+      renderAll();
+    }
+
+    function addCatalogItem(cid) {
+      const base = CATALOG.find(c => c.cid === cid);
+      if (base) {
+        state.items.push(Object.assign({}, base, { id: 'j_' + cid + '_' + Date.now(), type: 'jewellery', qty: 1 }));
+        state.collapsed.jewellery = false;
+        renderAll();
+        showToast(`Added "${base.name}" to cart`);
+      }
+    }
+
+    function setCatalogTab(tab) {
+      state.activeCatalogTab = tab;
+      renderCatalog();
+    }
+
+    function toggleCollapse(group) {
+      state.collapsed[group] = !state.collapsed[group];
+      renderAll();
+    }
+
+    function toggleOffers() {
+      state.offersOpen = !state.offersOpen;
+      renderOffers(computeCart());
+    }
+
+    function togglePriceBreakdown() {
+      state.priceBreakdownOpen = !state.priceBreakdownOpen;
+      renderOrderSummary(computeCart());
+    }
+
+    // Offers logic
+    function applyVoucher() {
+      const input = document.getElementById('couponInput');
+      const code = (input.value || '').trim().toUpperCase();
+      const err = document.getElementById('couponError');
+      const hasJew = state.items.some(i => i.type === 'jewellery');
+
+      if (!code) {
+        err.textContent = 'Please enter a coupon code';
+        err.style.display = 'block';
+        return;
+      }
+      if (code !== 'BLUE10') {
+        err.textContent = 'Invalid or expired code. Try BLUE10';
+        err.style.display = 'block';
+        return;
+      }
+      if (!hasJew) {
+        err.textContent = 'Coupon applies to fine jewellery only';
+        err.style.display = 'block';
+        return;
+      }
+
+      err.style.display = 'none';
+      state.voucher = { code: 'BLUE10' };
+      input.value = '';
+      renderAll();
+      showToast('Applied voucher BLUE10');
+    }
+
+    function applySuggestedCode(code) {
+      document.getElementById('couponInput').value = code;
+      applyVoucher();
+    }
+
+    function removeVoucher() {
+      state.voucher = null;
+      renderAll();
+    }
+
+    function applyGiftCardCode() {
+      const input = document.getElementById('gcInput');
+      const code = (input.value || '').trim().toUpperCase();
+      const err = document.getElementById('gcError');
+
+      if (!code) {
+        err.textContent = 'Enter gift card code';
+        err.style.display = 'block';
+        return;
+      }
+      if (code !== 'GC4821') {
+        err.textContent = 'Gift card not found. Try demo code: GC4821';
+        err.style.display = 'block';
+        return;
+      }
+
+      err.style.display = 'none';
+      state.giftCardCode = { code: 'GC4821', balance: 2500 };
+      input.value = '';
+      renderAll();
+      showToast('Redeemed ₹2,500 Gift Card balance');
+    }
+
+    function removeGiftCardCode() {
+      state.giftCardCode = null;
+      renderAll();
+    }
+
+    // Step navigation validations
+    function proceedToDetails() {
+      const calc = computeCart();
+      if (calc.jew.length === 0 && calc.plans.length === 0 && calc.gifts.length === 0) {
+        alert('Your cart is empty. Please add items before proceeding.');
+        return;
+      }
+
+      // Check gift card completion
+      const incompleteGift = calc.gifts.some(g => !g.rName || !g.rEmail || !g.sName);
+      if (incompleteGift) {
+        document.getElementById('cartGiftWarning').style.display = 'block';
+        state.collapsed.gifts = false;
+        renderAll();
+        return;
+      }
+      document.getElementById('cartGiftWarning').style.display = 'none';
+      setScreen('details');
+    }
+
+    // Details forms interactions
+    function setDeliveryMethod(method) {
+      state.deliveryMethod = method;
+      renderDetailsScreen(computeCart());
+    }
+
+    function selectStoreLocation(stId) {
+      state.selectedStore = stId;
+      renderDetailsScreen(computeCart());
+    }
+
+    function handlePincodeLookup(val, type) {
+      const clean = val.replace(/\D/g, '').slice(0, 6);
+      if (type === 'ship') {
+        state.homeAddress.pincode = clean;
+        if (clean.startsWith('560')) { state.homeAddress.city = 'Bengaluru'; state.homeAddress.state = 'Karnataka'; }
+        else if (clean.startsWith('400')) { state.homeAddress.city = 'Mumbai'; state.homeAddress.state = 'Maharashtra'; }
+        else if (clean.startsWith('110')) { state.homeAddress.city = 'New Delhi'; state.homeAddress.state = 'Delhi'; }
+        document.getElementById('shipCity').value = state.homeAddress.city;
+        document.getElementById('shipState').value = state.homeAddress.state;
+      } else {
+        state.billingAddress.pincode = clean;
+        if (clean.startsWith('560')) state.billingAddress.city = 'Bengaluru';
+        document.getElementById('billCity').value = state.billingAddress.city;
+      }
+    }
+
+    function toggleBillingAddressForm() {
+      const chk = document.getElementById('chkSameAsDelivery');
+      state.sameAsDelivery = chk.checked;
+      document.getElementById('planBillingAddressForm').style.display = chk.checked ? 'none' : 'grid';
+    }
+
+    function setNomineeField(pId, field, val) {
+      if (!state.nominees[pId]) state.nominees[pId] = {};
+      state.nominees[pId][field] = val;
+    }
+
+    function toggleSameNominee(pId, checked) {
+      state.sameNomineeAsFirst[pId] = checked;
+      renderDetailsScreen(computeCart());
+    }
+
+    // PAN Verification functions
+    function onPanInput(input) {
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+      document.getElementById('errPanMessage').style.display = 'none';
+    }
+
+    function verifyPanNumber() {
+      const input = document.getElementById('panNumberInput');
+      const val = (input.value || '').trim().toUpperCase();
+      const err = document.getElementById('errPanMessage');
+      const btn = document.getElementById('btnVerifyPan');
+
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val)) {
+        err.textContent = 'Invalid PAN format. Must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F).';
+        err.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying with NSDL…';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Verify PAN';
+        if (val === 'AAAAA0000A') {
+          err.textContent = 'PAN validation failed: Name does not match Aadhaar/Order details.';
+          err.style.display = 'block';
+        } else {
+          state.panNumber = val;
+          state.panVerified = true;
+          renderDetailsScreen(computeCart());
+          showToast('PAN card successfully verified');
+        }
+      }, 800);
+    }
+
+    function resetPanVerification() {
+      state.panVerified = false;
+      renderDetailsScreen(computeCart());
+    }
+
+    function validateContact() {
+      state.contact.name = document.getElementById('contactName').value;
+      state.contact.email = document.getElementById('contactEmail').value;
+      state.contact.mobile = document.getElementById('contactMobile').value;
+    }
+
+    function validateShipping() {
+      state.homeAddress.address = document.getElementById('shipAddress').value;
+    }
+
+    function validateAndProceedToPayment() {
+      const calc = computeCart();
+      let hasError = false;
+
+      // Validate contact
+      validateContact();
+      if (!state.contact.name.trim()) { document.getElementById('errContactName').style.display = 'block'; hasError = true; }
+      else document.getElementById('errContactName').style.display = 'none';
+
+      if (!state.contact.email.includes('@')) { document.getElementById('errContactEmail').style.display = 'block'; hasError = true; }
+      else document.getElementById('errContactEmail').style.display = 'none';
+
+      if (state.contact.mobile.length < 10) { document.getElementById('errContactMobile').style.display = 'block'; hasError = true; }
+      else document.getElementById('errContactMobile').style.display = 'none';
+
+      // Validate shipping if jewellery exists
+      if (calc.jew.length > 0 && state.deliveryMethod === 'home') {
+        validateShipping();
+        if (!state.homeAddress.address.trim()) { document.getElementById('errShipAddress').style.display = 'block'; hasError = true; }
+        else document.getElementById('errShipAddress').style.display = 'none';
+        
+        if (state.homeAddress.pincode.length < 6) { document.getElementById('errShipPincode').style.display = 'block'; hasError = true; }
+        else document.getElementById('errShipPincode').style.display = 'none';
+      }
+
+      // Validate PAN if total > 200000
+      if (calc.needPan && !state.panVerified) {
+        document.getElementById('errPanMessage').textContent = 'Mandatory PAN card verification required for orders above ₹2,00,000.';
+        document.getElementById('errPanMessage').style.display = 'block';
+        hasError = true;
+      }
+
+      const banner = document.getElementById('detailsValidationBanner');
+      if (hasError) {
+        banner.style.display = 'block';
+        window.scrollTo({ top: 100, behavior: 'smooth' });
+        return;
+      }
+      banner.style.display = 'none';
+      setScreen('pay');
+    }
+
+    function handleMobileCta() {
+      if (state.screen === 'cart') proceedToDetails();
+      else if (state.screen === 'details') validateAndProceedToPayment();
+      else completeDemoOrder();
+    }
+
+    function completeDemoOrder() {
+      alert('🎉 Order Placed Successfully! Your BlueStone insured delivery and gold plan setup are now active.');
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', initPrototype);
+  </script>
+
+
+</body></html>
